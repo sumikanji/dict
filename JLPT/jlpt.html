@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sumi AI - JLPT N5 Navigation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&family=Hina+Mincho&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --muji-bg: #fdfaf5;
+            --muji-red: #a63d40;
+            --muji-text: #333333;
+            --gray-border: #e8e8e8;
+            --white: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: var(--muji-bg);
+            color: var(--muji-text);
+            display: flex; flex-direction: column; align-items: center;
+            padding: 10px; min-height: 100vh;
+        }
+
+        /* SUMI BOT & MSG */
+        .bot-container { margin-bottom: 15px; text-align: center; width: 100%; max-width: 500px; }
+        #sumi-robot { width: 60px; height: 60px; margin-bottom: 10px; }
+        .bot-bubble {
+            background: white; padding: 12px 18px; border-radius: 18px; border: 1px solid var(--gray-border); 
+            font-size: 13px; color: var(--muji-red); font-weight: 500; min-height: 50px;
+        }
+
+        /* THANH ĐIỀU HƯỚNG NGANG (TABS) */
+        .navbar {
+            display: flex; width: 100%; max-width: 500px; background: white;
+            border-radius: 15px 15px 0 0; border: 1px solid var(--gray-border);
+            overflow: hidden; border-bottom: none;
+        }
+        .nav-tab {
+            flex: 1; padding: 12px 5px; border: none; background: #fafafa;
+            cursor: pointer; font-size: 11px; font-weight: 700; color: #aaa;
+            transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 4px;
+        }
+        .nav-tab span { font-family: 'Hina Mincho', serif; font-size: 18px; }
+        .nav-tab.active { background: white; color: var(--muji-red); border-bottom: 2px solid var(--muji-red); }
+
+        /* MAIN EXAM CARD */
+        .main-card {
+            width: 100%; max-width: 500px; background: white; 
+            border-radius: 0 0 25px 25px; padding: 25px; border: 1px solid var(--gray-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+        }
+
+        .timer-box {
+            text-align: center; font-size: 28px; font-weight: 700; color: var(--muji-red);
+            margin-bottom: 20px; border-bottom: 1px dashed var(--gray-border); padding-bottom: 10px;
+        }
+
+        /* QUESTION CONTENT */
+        .q-text { font-size: 18px; line-height: 1.8; margin-bottom: 20px; white-space: pre-wrap; font-weight: 500; }
+        .options-grid { display: grid; gap: 10px; }
+        .opt-btn {
+            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--gray-border);
+            background: white; text-align: left; cursor: pointer; font-size: 15px; transition: 0.2s;
+        }
+        .opt-btn:hover { border-color: var(--muji-red); background: #fffcfc; }
+        .opt-btn.correct { background: #e8f5e9; border-color: #4caf50; font-weight: 700; }
+        .opt-btn.wrong { background: #ffebee; border-color: var(--muji-red); }
+
+        .hidden { display: none; }
+        .primary-btn {
+            width: 100%; padding: 16px; border-radius: 15px; border: none;
+            background: var(--muji-red); color: white; font-weight: 700;
+            cursor: pointer; font-size: 15px; margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bot-container">
+        <div id="sumi-robot"><svg viewBox="0 0 100 100"><rect x="10" y="20" width="80" height="60" rx="30" fill="white" stroke="#e8e8e8" stroke-width="1.5"/><rect x="22" y="32" width="56" height="36" rx="18" fill="#333"/><circle cx="38" cy="50" r="5" fill="#00ffcc"/><circle cx="62" cy="50" r="5" fill="#00ffcc"/><circle cx="50" cy="5" r="7" fill="#a63d40"/></svg></div>
+        <div class="bot-bubble" id="sumi-msg">Chào cậu! Tớ đã chuẩn bị xong các phần thi. Nhấn vào thanh trên để chọn phần muốn làm nhé.</div>
+    </div>
+
+    <div class="navbar" id="exam-navbar">
+        <button class="nav-tab" onclick="switchSection(0, this)"><span>字</span>Hán tự</button>
+        <button class="nav-tab" onclick="switchSection(1, this)"><span>語</span>Từ vựng</button>
+        <button class="nav-tab" onclick="switchSection(2, this)"><span>文</span>Ngữ pháp</button>
+        <button class="nav-tab" onclick="switchSection(3, this)"><span>読</span>Đọc hiểu</button>
+        <button class="nav-tab" onclick="switchSection(4, this)"><span>聴</span>Nghe hiểu</button>
+    </div>
+
+    <div class="main-card">
+        <div class="timer-box" id="clock">120:00</div>
+        
+        <div id="quiz-area">
+            <div style="text-align: center; color: #999; padding: 40px 0;">
+                Nhấn "BẮT ĐẦU" để bắt đầu làm bài thi
+                <button class="primary-btn" onclick="initExam()">BẮT ĐẦU LÀM BÀI</button>
+             </div>
+        </div>
+    </div>
+
+    <script>
+        let examData = null;
+        let currentS = 0, currentQ = 0, timer = null, timeLeft = 120 * 60;
+        let isStarted = false;
+
+        async function initExam() {
+            try {
+                const res = await fetch('n5_full_database.json');
+                examData = await res.json();
+                isStarted = true;
+                
+                // Bật đồng hồ
+                timer = setInterval(updateClock, 1000);
+                
+                // Active tab đầu tiên
+                const firstTab = document.querySelectorAll('.nav-tab')[0];
+                switchSection(0, firstTab);
+            } catch (e) {
+                alert("Lỗi tải file JSON!");
+            }
+        }
+
+        function switchSection(sIdx, btn) {
+            if(!isStarted) return;
+            
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            
+            currentS = sIdx;
+            currentQ = 0;
+            renderQ();
+            
+            typeText(`Đang làm phần: ${examData.sections[sIdx].name}`);
+        }
+
+        function renderQ() {
+            const sec = examData.sections[currentS];
+            const q = sec.questions[currentQ];
+            const area = document.getElementById('quiz-area');
+
+            area.innerHTML = `
+                <div style="font-size:11px; font-weight:700; color:#bbb; margin-bottom:10px;">${sec.name.toUpperCase()} - CÂU ${currentQ + 1}/${sec.questions.length}</div>
+                <div class="q-text">${q.q}</div>
+                <div class="options-grid">
+                    ${q.options.map((opt, i) => `<button class="opt-btn" onclick="checkAnswer(${i})">${i+1}. ${opt}</button>`).join('')}
+                </div>
+            `;
+        }
+
+        function checkAnswer(idx) {
+            const q = examData.sections[currentS].questions[currentQ];
+            const btns = document.querySelectorAll('.opt-btn');
+            btns.forEach(b => b.style.pointerEvents = 'none');
+
+            if(idx === q.correct) {
+                btns[idx].classList.add('correct');
+                typeText("Tuyệt vời! " + (q.explain || ""));
+            } else {
+                btns[idx].classList.add('wrong');
+                btns[q.correct].classList.add('correct');
+                typeText("Sai rồi. " + (q.explain || ""));
+            }
+
+            const next = document.createElement('button');
+            next.className = 'primary-btn';
+            next.textContent = 'CÂU TIẾP THEO →';
+            next.onclick = () => {
+                currentQ++;
+                if(currentQ < examData.sections[currentS].questions.length) renderQ();
+                else typeText(`Đã hết câu hỏi phần này. Cậu có thể chọn phần khác trên thanh ngang!`);
+            };
+            document.getElementById('quiz-area').appendChild(next);
+        }
+
+        function updateClock() {
+            timeLeft--;
+            let m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+            document.getElementById('clock').textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+            if(timeLeft <= 0) clearInterval(timer);
+        }
+
+        function typeText(t) { document.getElementById('sumi-msg').textContent = t; }
+    </script>
+</body>
+</html>

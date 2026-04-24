@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sumi Dict - Fixed Bot UI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --muji-bg: #fdfaf5;
+            --muji-red: #a63d40;
+            --muji-text: #333333;
+            --white: #ffffff;
+            --gray-border: #e8e8e8;
+            --gray-light: #f5f5f5;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: var(--muji-bg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--muji-text);
+        }
+
+        /* --- SỬA LỖI KHUNG BOT SUMI --- */
+        .bot-container { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            margin-bottom: 30px; 
+            margin-top: 10px;
+            width: 100%;
+            max-width: 420px; /* Giới hạn độ rộng của cả cụm Bot */
+        }
+
+        #sumi-robot { 
+            width: 100px; 
+            height: 100px; 
+            position: relative; 
+            animation: floatingSumi 3s ease-in-out infinite; 
+        }
+
+        @keyframes floatingSumi { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+
+        .bot-bubble {
+            background: white; 
+            padding: 12px 18px; 
+            border-radius: 18px; 
+            border: 1px solid var(--gray-border); 
+            margin-top: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); 
+            color: var(--muji-red); 
+            position: relative;
+            
+            /* CHỐNG DÍNH CHỮ & TRÀN KHUNG */
+            width: fit-content;
+            max-width: 90%;      /* Không cho khung to quá màn hình */
+            font-size: 14px; 
+            font-weight: 600; 
+            line-height: 1.6;    /* Khoảng cách giữa các dòng */
+            letter-spacing: 0.3px;
+            text-align: center;
+            white-space: pre-wrap; /* Quan trọng nhất: tự xuống dòng và giữ khoảng cách */
+            word-wrap: break-word;
+        }
+
+        /* Mũi tên trỏ lên */
+        .bot-bubble::after {
+            content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+            border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 8px solid white;
+        }
+
+        /* --- GIỮ NGUYÊN CÁC PHẦN CÒN LẠI CỦA BẠN --- */
+        .search-wrapper { width: 100%; max-width: 480px; background: var(--white); border-radius: 20px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border: 1px solid var(--gray-border); margin-bottom: 20px; }
+        .search-bar { display: flex; align-items: center; background: var(--gray-light); border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
+        .search-icon { width: 18px; stroke: var(--muji-red); opacity: 0.6; margin-right: 10px; }
+        .search-input { flex: 1; border: none; background: transparent; font-size: 15px; outline: none; }
+        .lang-toggle { color: var(--muji-red); padding-left: 10px; border-left: 1px solid #ddd; font-size: 12px; font-weight: 700; }
+        .search-tools { display: flex; justify-content: space-around; padding-top: 10px; border-top: 1px solid var(--gray-border); }
+        .tool-btn { display: flex; flex-direction: column; align-items: center; cursor: pointer; flex: 1; }
+        .tool-btn svg { width: 20px; height: 20px; stroke: var(--muji-red); fill: none; stroke-width: 2; }
+        .tool-label { font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase; margin-top: 4px; }
+        .main-card { width: 100%; max-width: 480px; background: var(--white); border-radius: 28px; overflow: hidden; border: 1px solid var(--gray-border); margin-bottom: 20px; }
+        .utility-banner { background: var(--muji-red); padding: 15px; display: flex; justify-content: space-around; }
+        .banner-item { display: flex; flex-direction: column; align-items: center; color: white; cursor: pointer; }
+        .banner-item svg { width: 24px; height: 24px; stroke: white; fill: none; stroke-width: 2; margin-bottom: 4px; }
+        .banner-label { font-size: 9px; font-weight: 600; }
+        .utility-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 20px 15px; }
+        .grid-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .icon-box { width: 48px; height: 48px; border: 1px solid var(--gray-border); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; transition: 0.3s; }
+        .icon-box svg { width: 22px; height: 22px; stroke: var(--muji-red); fill: none; stroke-width: 1.8; }
+        .grid-label { font-size: 10px; font-weight: 700; color: #777; }
+        .grid-item:hover .icon-box { background: var(--muji-red); }
+        .grid-item:hover svg { stroke: white; }
+        .community-card { width: 100%; max-width: 480px; background: var(--white); border-radius: 24px; padding: 20px; border: 1px solid var(--gray-border); }
+        .comm-title { font-size: 11px; font-weight: 800; color: var(--muji-red); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .comm-list { display: flex; flex-direction: column; gap: 12px; }
+        .comm-item { display: flex; align-items: center; gap: 15px; padding: 12px; border-radius: 14px; background: var(--gray-light); cursor: pointer; transition: 0.2s; }
+        .comm-icon { width: 40px; height: 40px; background: var(--white); border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; }
+        .comm-icon svg { width: 22px; height: 22px; stroke: var(--muji-red); fill: none; stroke-width: 2; }
+        .comm-text b { font-size: 13px; display: block; color: var(--muji-text); }
+        .comm-text span { font-size: 11px; color: #999; }
+    .sumi-support-fixed {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .support-icon {
+        width: 65px;
+        height: 65px;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 8px 25px rgba(166, 61, 64, 0.2);
+        padding: 5px;
+        border: 2px solid #f0f0f0;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .sumi-support-fixed:hover .support-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .support-bubble {
+        background: #a63d40;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        white-space: nowrap;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        position: relative;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+        pointer-events: none;
+    }
+
+    /* Hiện bong bóng khi hover hoặc có class active */
+    .sumi-support-fixed:hover .support-bubble {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Đuôi nhọn của bong bóng chat */
+    .support-bubble::after {
+        content: '';
+        position: absolute;
+        bottom: -6px;
+        right: 25px;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-top: 6px solid #a63d40;
+    }
+
+    @media (max-width: 600px) {
+        .sumi-support-fixed { bottom: 20px; right: 20px; }
+        .support-icon { width: 55px; height: 55px; }
+    }
+    /* --- CSS CHO SUMI SUPPORT --- */
+.sumi-support-fixed { 
+    position: fixed; 
+    bottom: 30px; 
+    right: 30px; 
+    z-index: 9999; 
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+.sumi-support-fixed:active { transform: scale(0.9); }
+
+.support-icon { 
+    width: 65px; height: 65px; 
+    background: white; 
+    border-radius: 50%; 
+    box-shadow: 0 8px 25px rgba(166, 61, 64, 0.15); 
+    padding: 5px; 
+    border: 2px solid #f0f0f0; 
+}
+
+/* Khung Chat */
+.chat-window {
+    position: fixed; 
+    bottom: 105px; 
+    right: 30px; 
+    width: 320px; 
+    height: 450px;
+    background: white; 
+    border-radius: 20px; 
+    border: 1px solid #eee;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden;
+    z-index: 10000;
+    
+    /* Hiệu ứng bung ra từ góc */
+    transform: scale(0); 
+    transform-origin: bottom right; 
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    visibility: hidden;
+}
+
+.chat-window.active { 
+    transform: scale(1); 
+    visibility: visible;
+}
+
+/* Header */
+.chat-header { 
+    background: #a63d40; 
+    color: white; 
+    padding: 15px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+.header-info { display: flex; align-items: center; gap: 8px; }
+.header-dot { width: 8px; height: 8px; background: #00ffcc; border-radius: 50%; }
+.close-chat { cursor: pointer; font-size: 24px; font-weight: 300; }
+
+/* Body */
+.chat-body { 
+    flex: 1; 
+    padding: 15px; 
+    overflow-y: auto; 
+    background: #fdfaf5; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; 
+}
+.msg-bot { 
+    background: white; padding: 10px 14px; border-radius: 15px 15px 15px 4px; 
+    border: 1px solid #eee; font-size: 13px; max-width: 85%; align-self: flex-start; 
+    color: #333; line-height: 1.6; 
+}
+.msg-user { 
+    background: #a63d40; color: white; padding: 10px 14px; 
+    border-radius: 15px 15px 4px 15px; font-size: 13px; 
+    max-width: 85%; align-self: flex-end; 
+}
+
+/* Footer */
+.chat-footer { padding: 12px; background: white; border-top: 1px solid #eee; display: flex; gap: 8px; }
+.chat-footer input { 
+    flex: 1; border: 1px solid #eee; padding: 10px 15px; 
+    border-radius: 12px; outline: none; font-size: 13px; background: #f9f9f9;
+}
+.chat-footer button { 
+    background: #a63d40; border: none; color: white; 
+    width: 40px; height: 40px; border-radius: 12px; cursor: pointer; 
+}
+
+/* Lời chào nhỏ trên đầu Robot */
+.support-bubble {
+    position: absolute; top: -45px; right: 0; background: white;
+    padding: 6px 12px; border-radius: 10px; font-size: 11px; font-weight: 700;
+    color: #a63d40; border: 1px solid #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    white-space: nowrap; transition: 0.3s;
+}
+/* 1. CSS CHO HÌNH VUÔNG BO TRÒN TRÙNG MÀU NỀN */
+    .banner-sq-icon {
+        width: 42px;
+        height: 42px;
+        /* Thay background trắng bằng màu nền muji-bg */
+        background: var(--muji-bg); 
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 8px;
+        /* Giảm độ bóng để trông hài hòa hơn với màu nền */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+        transition: all 0.2s ease;
+    }
+
+    /* 2. Chữ Kanji 学 bên trong */
+    .kanji-text {
+        color: var(--muji-red);
+        font-size: 18px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    /* 3. Các SVG icon bên trong */
+    .banner-sq-icon svg {
+        width: 20px;
+        height: 20px;
+        stroke: var(--muji-red);
+        fill: none;
+        stroke-width: 2.5;
+    }
+
+    /* Hiệu ứng nhấn (Click) */
+    .banner-item:active .banner-sq-icon {
+        transform: scale(0.9);
+        /* Khi nhấn vào sẽ sáng lên một chút để tạo phản hồi */
+        background: var(--white); 
+    }
+    .footer-copyright {
+    width: 100%;
+    max-width: 480px; /* Cân bằng với độ rộng của các khung phía trên */
+    padding: 30px 0 50px 0; /* Tạo khoảng trống phía dưới cùng */
+    text-align: center;
+}
+
+.footer-copyright p {
+    font-size: 11px;
+    color: #bbb; /* Màu xám nhạt tinh tế */
+    letter-spacing: 0.5px;
+    font-weight: 400;
+}
+/* Nền mờ phía sau */
+.popup-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: none; /* Ẩn mặc định */
+    justify-content: center; align-items: center;
+    z-index: 20000;
+    backdrop-filter: blur(3px);
+}
+
+/* Khung nội dung */
+.popup-content {
+    background: var(--muji-bg);
+    width: 90%; max-width: 350px;
+    padding: 30px; border-radius: 25px;
+    position: relative; text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: popupShow 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popupShow {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.close-popup { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: #ccc; }
+
+.popup-header h1 { font-size: 60px; color: var(--muji-red); margin-bottom: 5px; }
+.popup-header p { font-size: 14px; font-weight: 800; text-transform: uppercase; color: #777; letter-spacing: 2px; }
+
+.popup-body { margin-top: 20px; text-align: left; }
+.info-item { margin-bottom: 15px; }
+.info-item b { font-size: 11px; text-transform: uppercase; color: var(--muji-red); display: block; margin-bottom: 4px; }
+.info-item p { font-size: 14px; line-height: 1.6; color: var(--muji-text); }
+
+.popup-btn {
+    width: 100%; padding: 12px; border-radius: 12px; border: none;
+    background: var(--muji-red); color: white; font-weight: 700;
+    text-transform: uppercase; cursor: pointer; margin-top: 10px;
+}
+</style>
+    </style>
+</head>
+<body>
+
+    <div class="bot-container">
+        <div id="sumi-robot">
+            <svg viewBox="0 0 100 100"><rect x="10" y="20" width="80" height="60" rx="30" fill="white" stroke="#e0e0e0" stroke-width="1.5"/><rect x="22" y="32" width="56" height="36" rx="18" fill="#333"/><circle cx="38" cy="50" r="5" fill="#00ffcc"/><circle cx="62" cy="50" r="5" fill="#00ffcc"/><path d="M50 20 L50 5" stroke="#a63d40" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="5" r="7" fill="#a63d40"/></svg>
+        </div>
+        <div class="bot-bubble"><span id="type-text"></span></div>
+    </div>
+<div class="sumi-support-wrapper">
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <div class="header-info">
+                <div class="header-dot"></div>
+                <b>Sumi AI Support</b>
+            </div>
+            <span class="close-chat" onclick="toggleSupport()">×</span>
+        </div>
+        
+        <div class="chat-body" id="chatBody">
+            <div class="msg-bot">Chào cậu! Sumi đã sẵn sàng hỗ trợ cậu rồi đây. Cậu cần giúp gì về Kanji hay cách dùng web không? 🍵</div>
+        </div>
+        
+        <div class="chat-footer">
+            <input type="text" id="chatInput" placeholder="Nhập câu hỏi của cậu..." onkeypress="handleChat(event)">
+            <button onclick="sendChat()">➤</button>
+        </div>
+    </div>
+
+    <div class="sumi-support-fixed" onclick="toggleSupport()">
+        <div class="support-bubble" id="support-msg">Sumi hỗ trợ cậu nhé!</div>
+        <div class="support-icon">
+            <svg viewBox="0 0 100 100">
+                <rect x="10" y="20" width="80" height="60" rx="30" fill="white" stroke="#a63d40" stroke-width="2"/>
+                <rect x="22" y="32" width="56" height="36" rx="18" fill="#333"/>
+                <circle cx="38" cy="50" r="4" fill="#00ffcc"/><circle cx="62" cy="50" r="4" fill="#00ffcc"/>
+                <path d="M50 20 L50 5" stroke="#a63d40" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="5" r="7" fill="#a63d40"/>
+            </svg>
+        </div>
+    </div>
+</div>
+</div>
+    <div class="search-wrapper">
+        <div class="search-bar">
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <input type="text" id="searchInput" class="search-input" placeholder="tìm kanji, hán việt, nghĩa..." onkeypress="executeSearch(event)">
+    <div class="lang-toggle">ja | vi</div>
+</div>
+       <div class="search-tools">
+        <div class="tool-btn" onclick="typeText('đang mở camera để quét ảnh...')">
+            <svg viewBox="0 0 24 24">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            <span class="tool-label">quét ảnh</span>
+        </div>
+
+        <div class="tool-btn" onclick="typeText('sumi đang lắng nghe cậu đây...')">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+            </svg>
+            <span class="tool-label">giọng nói</span>
+        </div>
+
+        <div class="tool-btn" onclick="typeText('hãy vẽ kanji vào khung nhé...')">
+            <svg viewBox="0 0 24 24">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            <span class="tool-label">viết tay</span>
+        </div>
+    </div>
+    </div>
+
+    <div class="main-card">
+      <div class="utility-banner">
+    <a href="kanji/kanji.html" style="text-decoration: none;">
+        <div class="banner-item">
+            <div class="banner-sq-icon">
+                <span class="kanji-text">学</span>
+            </div>
+            <span class="banner-label">HỌC KANJI</span>
+        </div>
+    </a>
+
+   <a href="jlpt/jlpt.html" style="text-decoration: none;">
+        <div class="banner-item">
+            <div class="banner-sq-icon">
+                <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <span class="banner-label">THI JLPT</span>
+        </div>
+    </a>
+
+    <a href="Tu%20vung/tuvung.html" style="text-decoration: none;">
+        <div class="banner-item">
+            <div class="banner-sq-icon">
+                <span class="kanji-text">語</span>
+            </div>
+            <span class="banner-label">TỪ VỰNG</span>
+        </div>
+    </a>
+
+    <div class="banner-item" onclick="typeText('Bắt đầu luyện Shadowing nhé!')">
+        <div class="banner-sq-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 1v22"></path>
+                <path d="M17 5v14"></path>
+                <path d="M7 5v14"></path>
+                <path d="M2 9v6"></path>
+                <path d="M22 9v6"></path>
+            </svg>
+        </div>
+        <span class="banner-label">SHADOWING</span>
+    </div>
+</div>
+        <div class="utility-grid">
+            <div class="grid-item"><div class="icon-box"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></div><div class="grid-label">Sổ tay</div></div>
+            <div class="grid-item"><div class="icon-box"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div><div class="grid-label">Đọc</div></div>
+            <div class="grid-item"><div class="icon-box"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path></svg></div><div class="grid-label">Nghe</div></div>
+            <div class="grid-item"><div class="icon-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></div><div class="grid-label">Khác</div></div>
+        </div>
+    </div>
+
+    <div class="community-card">
+        <div class="comm-title">Cộng đồng học tập</div>
+        <div class="comm-list">
+            <div class="comm-item">
+                <div class="comm-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg></div>
+                <div class="comm-text"><b>Nhóm học tập</b><span>Trao đổi cùng mọi người</span></div>
+            </div>
+            <div class="comm-item">
+                <div class="comm-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+                <div class="comm-text"><b>Hỏi đáp JLPT</b><span>Sumi giải đáp thắc mắc</span></div>
+            </div>
+            <div class="comm-item">
+                <div class="comm-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
+                <div class="comm-text"><b>Góc từ vựng</b><span>Chia sẻ mẹo nhớ Kanji</span></div>
+            </div>
+        </div>
+    </div>
+<div id="resultPopup" class="popup-overlay">
+    <div class="popup-content">
+        <span class="close-popup" onclick="closePopup()">×</span>
+        <div class="popup-header">
+            <h1 id="popKanji">亜</h1>
+            <p id="popHanViet">A Á</p>
+        </div>
+        <div class="popup-body">
+            <div class="info-item">
+                <b>nghĩa:</b>
+                <p id="popMeaning"></p>
+            </div>
+            <div class="info-item">
+                <b>chi tiết:</b>
+                <p id="popDetail"></p>
+            </div>
+        </div>
+        <button class="popup-btn" onclick="closePopup()">đóng</button>
+    </div>
+</div>
+   <script>
+    // 1. KHAI BÁO BIẾN DỮ LIỆU TOÀN CỤC
+    let dictionaryData = [];
+    let typingTimer = null;
+
+    // 2. HÀM TẢI DỮ LIỆU (CHỈ CẦN 1 HÀM NÀY)
+    async function initData() {
+        try {
+            // Tải song song 2 file
+            const [res1, res2] = await Promise.all([
+                fetch('kanji_bank_1.json').catch(() => null),
+                fetch('kanji_bank_2.json').catch(() => null)
+            ]);
+
+            let data1 = res1 ? await res1.json() : [];
+            let data2 = res2 ? await res2.json() : [];
+
+            dictionaryData = [...data1, ...data2];
+            console.log("Sumi đã nạp xong: " + dictionaryData.length + " từ vựng.");
+        } catch (error) {
+            console.error("Lỗi nạp dữ liệu:", error);
+        }
+    }
+
+    // 3. HÀM TRA CỨU (Đổi tên thành executeSearch để khớp với HTML của bạn)
+   function executeSearch(event) {
+    if (event.key === "Enter") {
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        if (!query) return;
+
+        typeText("để sumi tìm thử xem nào...");
+
+        // dictionaryData là mảng dữ liệu từ file JSON của bạn
+        const result = dictionaryData.find(item => {
+            const matchKanji = item[0] === query;
+            const matchHanViet = item[1] && item[1].toLowerCase().includes(query);
+            const matchNghia = item[4] && item[4].some(n => n.toLowerCase().includes(query));
+            return matchKanji || matchHanViet || matchNghia;
+        });
+
+        setTimeout(() => {
+            if (result) {
+                showPopup(result);
+                typeText("sumi đã tìm thấy rồi nhé!");
+            } else {
+                typeText("hic, sumi không thấy từ này rồi...");
+            }
+        }, 600);
+    }
+}
+
+function showPopup(data) {
+    document.getElementById('popKanji').innerText = data[0];
+    document.getElementById('popHanViet').innerText = data[1];
+    
+    // Gộp các nghĩa
+    const meanings = data[4] ? data[4].join(", ") : "đang cập nhật";
+    document.getElementById('popMeaning').innerText = meanings.toLowerCase();
+    
+    // Thông tin thêm (nếu có)
+    const detail = data[5] ? `số nét: ${data[5].Strokes} | bộ: ${data[5].Radical}` : "không có dữ liệu thêm";
+    document.getElementById('popDetail').innerText = detail.toLowerCase();
+
+    document.getElementById('resultPopup').style.display = 'flex';
+}
+
+function closePopup() {
+    document.getElementById('resultPopup').style.display = 'none';
+}
+
+    // 4. HÀM TYPEWRITER (HIỆU ỨNG GÕ CHỮ)
+    function typeText(text) {
+        const el = document.getElementById('type-text');
+        if (!el) return;
+
+        if (typingTimer) clearInterval(typingTimer);
+        el.innerText = ""; 
+        
+        let i = 0;
+        typingTimer = setInterval(() => {
+            if (i < text.length) {
+                el.innerText += text.charAt(i);
+                i++;
+            } else {
+                clearInterval(typingTimer);
+            }
+        }, 30); 
+    }
+
+    // 5. HÀM ĐIỀU KHIỂN CHAT SUPPORT (Cố định lỗi toggle)
+    function toggleSupport() {
+        const chatWin = document.getElementById('chatWindow');
+        const bubble = document.getElementById('support-msg');
+        if(!chatWin) return;
+
+        chatWin.classList.toggle('active');
+        bubble.style.opacity = chatWin.classList.contains('active') ? "0" : "1";
+    }
+
+    function handleChat(e) {
+        if (e.key === 'Enter') sendChat();
+    }
+
+    function sendChat() {
+        const input = document.getElementById('chatInput');
+        const body = document.getElementById('chatBody');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const userDiv = document.createElement('div');
+        userDiv.className = 'msg-user';
+        userDiv.innerText = text;
+        body.appendChild(userDiv);
+        input.value = "";
+
+        setTimeout(() => {
+            const botDiv = document.createElement('div');
+            botDiv.className = 'msg-bot';
+            botDiv.innerText = "Sumi đang ghi nhận: '" + text + "'. Chờ xíu nhé!";
+            body.appendChild(botDiv);
+            body.scrollTop = body.scrollHeight;
+        }, 700);
+    }
+
+    // 6. KHỞI CHẠY KHI WEB LOAD XONG
+    window.onload = () => {
+        initData();
+        typeText("Chào cậu! Sumi AI đã sẵn sàng giúp cậu tra cứu.");
+    };
+</script>
+    <footer class="footer-copyright">
+    <p>© 2026 sumi dict. bảo lưu mọi quyền.</p>
+</footer>
+</body>
+</html>

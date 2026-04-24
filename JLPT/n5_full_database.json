@@ -1,0 +1,60 @@
+{
+  "exam_id": "N5_2010_2011_MASTER",
+  "title": "Đề thi chính thức JLPT N5",
+  "sections": [
+    {
+      "id": "kanji",
+      "name": "Hán tự (文字)",
+      "icon": "字",
+      "questions": [
+        {"q": "あそこは【公園】です。", "options": ["こうえん", "ごうえん", "こうえぬ", "ごうえぬ"], "correct": 0, "explain": "公園 (Công viên) đọc là こうえん."},
+        {"q": "この【車】はだれのですか。", "options": ["くろま", "くるま", "こるま", "ころま"], "correct": 1, "explain": "車 (Xe hơi) đọc là くるま."},
+        {"q": "【右】を見てから道をわたります。", "options": ["みぎ", "ひだり", "まえ", "うしろ"], "correct": 0, "explain": "右 (Bên phải) đọc là みぎ."}
+      ]
+    },
+    {
+      "id": "vocab",
+      "name": "Từ vựng (語彙)",
+      "icon": "語",
+      "questions": [
+        {"q": "まいあさ パンを 【      】。", "options": ["のみます", "たべます", "いきます", "かいます"], "correct": 1, "explain": "Ăn bánh mì dùng động từ たべます."},
+        {"q": "あそこは 【      】 ですから、しずかです。", "options": ["としょかん", "デパート", "にわ", "まち"], "correct": 0, "explain": "Thư viện (としょかん) là nơi yên tĩnh."}
+      ]
+    },
+    {
+      "id": "grammar",
+      "name": "Ngữ pháp (文法)",
+      "icon": "文",
+      "questions": [
+        {"q": "あした どこ 【      】 いきますか。", "options": ["に", "で", "を", "が"], "correct": 0, "explain": "Chỉ điểm đến dùng trợ từ に."},
+        {"q": "田中さんは テニス 【      】 じょうずです。", "options": ["が", "を", "に", "で"], "correct": 0, "explain": "Khen ngợi năng lực dùng trợ từ が."}
+      ]
+    },
+    {
+      "id": "reading",
+      "name": "Đọc hiểu (読解)",
+      "icon": "読",
+      "questions": [
+        {
+          "q": "私は毎朝6時に起きます。朝ご飯を食べたあとで、学校へ行きます。\n\nCâu hỏi: 私は 何時に 起きますか。", 
+          "options": ["5時", "6時", "7時", "8時"], 
+          "correct": 1, 
+          "explain": "Thông tin nằm ở câu đầu tiên: 6時."
+        }
+      ]
+    },
+    {
+      "id": "listening",
+      "name": "Nghe hiểu (聴解)",
+      "icon": "聴",
+      "questions": [
+        {
+          "q": "学生は何で名前を書きますか。", 
+          "options": ["えんぴつ", "黒のボールペン", "赤のボールペン", "万年筆"], 
+          "correct": 1, 
+          "explain": "Lời thoại: 鉛筆じゃなくて、ボールペンですよ (Không phải bút chì, mà là bút bi)."
+        }
+      ]
+    }
+  ]
+}

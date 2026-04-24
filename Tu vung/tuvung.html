@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanji Muji v32.7 - Original</title>
+    <style>
+        :root {
+            --muji-bg: #f7f6f2;
+            --muji-white: #ffffff;
+            --muji-text: #333333;
+            --muji-gray: #7f7f7f;
+            --muji-border: #e0dbd1;
+            --muji-accent: #8b2e2b;
+            --radius-btn: 12px;
+            --radius-box: 20px;
+        }
+
+        body { font-family: "Helvetica Neue", "Hiragino Sans", sans-serif; background-color: var(--muji-bg); color: var(--muji-text); margin: 0; line-height: 1.6; }
+        .page { max-width: 900px; margin: 0 auto; padding: 40px 20px; display: none; }
+        .active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* MICRO-INTERACTIONS */
+        .btn-muji, .book { transition: transform 0.1s ease; cursor: pointer; outline: none; }
+        .btn-muji:active, .book:active { transform: scale(0.94); }
+        
+        #hint-display { 
+            font-size: 14px; color: var(--muji-gray); margin: 10px 0; height: 20px; 
+            opacity: 0; transform: translateY(-10px); transition: all 0.3s ease; visibility: hidden;
+        }
+        #hint-display.show-hint { opacity: 1; transform: translateY(0); visibility: visible; }
+
+        /* STUDY AREA */
+        .container { background: var(--muji-white); padding: 50px 20px; border-radius: var(--radius-box); border: 1px solid var(--muji-border); text-align: center; position: relative; }
+        .kanji-big { font-size: 120px; margin: 0; font-weight: 700; color: #000; line-height: 1.1; }
+        
+        .input-wrapper { position: relative; display: inline-block; width: 80%; max-width: 280px; }
+        input[type="text"] { width: 100%; border: none; border-bottom: 1px solid var(--muji-border); padding: 12px; font-size: 22px; text-align: center; outline: none; background: transparent; }
+        
+        .feedback-icon { position: absolute; right: -35px; top: 12px; font-size: 24px; opacity: 0; transition: 0.2s; }
+        .show-feedback { opacity: 1; }
+
+        .last-word-box { 
+            margin-top: 40px; padding: 15px 35px; background: #fafaf9; 
+            border: 1px solid var(--muji-border); border-radius: var(--radius-box); 
+            display: inline-flex; align-items: center; gap: 15px; animation: slideUp 0.3s ease;
+        }
+
+        /* FLASHCARD */
+        .flash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .card { height: 240px; perspective: 1000px; cursor: pointer; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+        .card.flipped .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back { 
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
+            border: 1px solid var(--muji-border); border-radius: var(--radius-box); display: flex; 
+            flex-direction: column; justify-content: center; align-items: center; background: white; 
+        }
+        .card-back { transform: rotateY(180deg); background: #fdfdfd; padding: 15px; }
+        
+        .flash-hanviet { color: var(--muji-accent); font-weight: 700; font-size: 20px; margin-bottom: 5px; }
+        .flash-nghia { font-size: 18px; color: var(--muji-text); font-weight: 500; }
+        .flash-hira { font-size: 14px; color: var(--muji-gray); margin-bottom: 10px; }
+
+        /* UI ELEMENTS */
+        .header { border-bottom: 1px solid var(--muji-border); margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; }
+        .btn-muji { background: none; border: 1px solid var(--muji-border); color: var(--muji-gray); padding: 8px 18px; border-radius: 12px; font-size: 12px; margin: 5px; }
+        .btn-black { background: var(--muji-text); color: white; border: none; }
+        .badge { background: var(--muji-accent); color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-left: 5px; }
+        
+        #toast { position: fixed; bottom: -50px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 25px; border-radius: 20px; font-size: 12px; transition: 0.4s; opacity: 0; z-index: 1000; }
+        #toast.show { bottom: 30px; opacity: 1; }
+
+        /* TABLE & PRINT */
+        .print-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        .print-table td, .print-table th { border: 1px solid var(--muji-border); padding: 12px; text-align: center; }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+            .page { display: block !important; padding: 0; margin: 0; max-width: 100%; }
+            .print-table { width: 100%; border: 1px solid black; }
+            .print-table th, .print-table td { border: 1px solid black; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="toast">Thông báo</div>
+
+<div id="lib-page" class="page active">
+    <div class="header">
+        <h1>耳から覚える (Từ vựng)</h1>
+        <div class="no-print">
+            <button class="btn-muji" onclick="showPage('review-page')">SỔ TAY <span id="count-hard" class="badge">0</span></button>
+            <button class="btn-muji btn-black" onclick="showPage('print-page')">IN PDF <span id="count-print" class="badge">0</span></button>
+        </div>
+    </div>
+    <div class="shelf no-print" id="shelf-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:25px;"></div>
+</div>
+
+<div id="study-page" class="page">
+    <button class="btn-muji no-print" onclick="showPage('lib-page')">← THƯ VIỆN</button>
+    <div class="container">
+        <div id="progress" style="font-size: 11px; text-align: right; color: var(--muji-gray);">0/0</div>
+        <div class="kanji-big" id="mainKanji">--</div>
+        <button class="btn-muji no-print" onclick="speakCurrent()" style="border-radius:50%; width:50px; height:50px; padding:0; margin: 10px 0 20px 0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--muji-gray)"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <div id="info-area" style="min-height: 80px; opacity:0; transition:0.3s;">
+            <div id="mainHanViet" style="font-size: 26px; color: var(--muji-accent); font-weight: bold; letter-spacing: 4px;"></div>
+            <div id="mainNghia" style="color: var(--muji-gray);"></div>
+        </div>
+        <div id="hint-display">Gợi ý: <span id="hint-text"></span></div>
+        <div class="input-wrapper">
+            <input type="text" id="inputBox" placeholder="gõ Hiragana vào đây ..." autocomplete="off">
+            <span id="feedback" class="feedback-icon"></span>
+        </div>
+        <div style="margin-top: 20px;" class="no-print">
+            <button class="btn-muji" onclick="toggleHint()">GỢI Ý 💡</button>
+            <button class="btn-muji" onclick="addToPrint()">+ THÊM VÀO BẢN IN PDF</button>
+            <button class="btn-muji btn-black" onclick="markAsHard()" style="background:#8b2e2b">LƯU ĐỂ ÔN TẬP ★</button>
+        </div>
+        <div class="last-word-box" id="last-word-container" style="display:none;">
+            <span style="font-size: 28px; font-weight: 700;" id="last-kanji"></span>
+            <span style="background: #eee; color: #333; padding: 4px 12px; border-radius: 4px; font-size: 13px; font-weight: 600;" id="last-hanviet"></span>
+            <span style="color: var(--muji-gray);" id="last-meaning"></span>
+        </div>
+    </div>
+</div>
+
+<div id="review-page" class="page">
+    <div class="header"><h1>Flashcards</h1><button class="btn-muji no-print" onclick="showPage('lib-page')">QUAY LẠI</button></div>
+    <div id="flashcard-list" class="flash-grid"></div>
+</div>
+
+<div id="print-page" class="page">
+    <div class="header no-print"><h1>Danh sách in</h1><div class="no-print"><button class="btn-muji btn-black" onclick="window.print()">IN PDF</button><button class="btn-muji" onclick="showPage('lib-page')">QUAY LẠI</button></div></div>
+    <table class="print-table">
+        <thead><tr><th>STT</th><th>Kanji</th><th>Hiragana</th><th>Hán Việt</th><th>Nghĩa</th><th class="no-print">Thao tác</th></tr></thead>
+        <tbody id="print-tbody"></tbody>
+    </table>
+</div>
+
+<script>
+    const DATA = {
+        "N5": [{ kanji: "私", hiragana: "わたし", hanviet: "TƯ", nghia: "Tôi" }, { kanji: "人", hiragana: "ひと", hanviet: "NHÂN", nghia: "Người" }],
+        "N4": [{ kanji: "古い", hiragana: "ふるい", hanviet: "CỔ", nghia: "Cũ" }, { kanji: "新", hiragana: "あたらしい", hanviet: "TÂN", nghia: "Mới" }],
+        "N3": [{ kanji: "希望", hiragana: "きぼう", hanviet: "HY VỌNG", nghia: "Hy vọng" }],
+        "N2": [{ kanji: "範囲", hiragana: "はんい", hanviet: "PHẠM VI", nghia: "Phạm vi" }],
+        "N1": [{ kanji: "完璧", hiragana: "かんぺき", hanviet: "HOÀN BÍCH", nghia: "Hoàn hảo" }]
+    };
+
+    let currentList = [], currentIdx = 0;
+    let printList = JSON.parse(localStorage.getItem('muji_print_list')) || [];
+    let hardWords = JSON.parse(localStorage.getItem('muji_hard_words')) || [];
+
+    function playFeedbackSound(isCorrect) {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.connect(g); g.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(isCorrect ? 600 : 200, audioCtx.currentTime);
+        g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+    }
+
+    function renderShelf() {
+        document.getElementById('shelf-list').innerHTML = ["N5","N4","N3","N2","N1"].map(lvl => `
+            <div class="book" onclick="startLearning('${lvl}')">
+                <div style="background:white; aspect-ratio:3/4; border:1px solid var(--muji-border); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:40px; font-weight:700; margin-bottom:10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">${lvl}</div>
+                <span style="font-size:13px; color:var(--muji-gray); font-weight:600;">Học Kanji</span>
+            </div>
+        `).join('');
+    }
+
+    function startLearning(lvl) { currentList = DATA[lvl]; currentIdx = 0; document.getElementById('last-word-container').style.display='none'; showPage('study-page'); loadWord(); }
+
+    function loadWord() {
+        const item = currentList[currentIdx];
+        document.getElementById('mainKanji').innerText = item.kanji;
+        document.getElementById('mainHanViet').innerText = item.hanviet;
+        document.getElementById('mainNghia').innerText = item.nghia;
+        document.getElementById('hint-text').innerText = item.hiragana;
+        document.getElementById('hint-display').classList.remove('show-hint');
+        document.getElementById('info-area').style.opacity = '0';
+        document.getElementById('progress').innerText = `${currentIdx + 1}/${currentList.length}`;
+        const input = document.getElementById('inputBox');
+        input.value = ""; document.getElementById('feedback').className = 'feedback-icon';
+        input.focus();
+    }
+
+    document.getElementById('inputBox').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const val = e.target.value.trim();
+            const item = currentList[currentIdx];
+            const fb = document.getElementById('feedback');
+            if (val === item.hiragana) {
+                fb.innerText = "✓"; fb.style.color = "#5c8d89"; fb.className = "feedback-icon show-feedback";
+                playFeedbackSound(true); speakText(item.kanji);
+                document.getElementById('info-area').style.opacity = '1';
+                document.getElementById('last-word-container').style.display = 'inline-flex';
+                document.getElementById('last-kanji').innerText = item.kanji;
+                document.getElementById('last-hanviet').innerText = item.hanviet;
+                document.getElementById('last-meaning').innerText = " • " + item.nghia;
+                setTimeout(() => { if (currentIdx < currentList.length - 1) { currentIdx++; loadWord(); } else { showToast("Hoàn thành!"); } }, 1300);
+            } else {
+                fb.innerText = "✕"; fb.style.color = "var(--muji-accent)"; fb.className = "feedback-icon show-feedback";
+                playFeedbackSound(false);
+                setTimeout(() => { e.target.value = ""; fb.classList.remove('show-feedback'); }, 800);
+            }
+        }
+    });
+
+    function speakText(txt) { window.speechSynthesis.cancel(); const m = new SpeechSynthesisUtterance(txt); m.lang = 'ja-JP'; window.speechSynthesis.speak(m); }
+    function speakCurrent() { speakText(currentList[currentIdx].kanji); }
+    function toggleHint() { document.getElementById('hint-display').classList.toggle('show-hint'); }
+
+    function addToPrint() {
+        if(!printList.find(x => x.kanji === currentList[currentIdx].kanji)) {
+            printList.push(currentList[currentIdx]); localStorage.setItem('muji_print_list', JSON.stringify(printList));
+            updateCounts(); showToast("Đã thêm vào bản in ✓");
+        }
+    }
+
+    function markAsHard() {
+        if(!hardWords.find(w => w.kanji === currentList[currentIdx].kanji)) {
+            hardWords.push(currentList[currentIdx]); localStorage.setItem('muji_hard_words', JSON.stringify(hardWords));
+            updateCounts(); showToast("Đã thêm vào sổ tay ★");
+        }
+    }
+
+    function renderFlashcards() {
+        const list = document.getElementById('flashcard-list');
+        list.innerHTML = hardWords.length ? hardWords.map((w, i) => `
+            <div class="card" onclick="this.classList.toggle('flipped')">
+                <div class="card-inner">
+                    <div class="card-front"><div style="font-size:36px; font-weight:bold;">${w.kanji}</div></div>
+                    <div class="card-back">
+                        <div class="flash-hanviet">${w.hanviet}</div>
+                        <div class="flash-nghia">${w.nghia}</div>
+                        <div class="flash-hira">${w.hiragana}</div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-muji" onclick="event.stopPropagation(); speakText('${w.kanji}')" style="padding:5px 12px;">🔊 Nghe</button>
+                            <button class="btn-muji" onclick="event.stopPropagation(); removeHard(${i})" style="padding:5px 12px;">Xóa</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('') : "<p>Sổ tay trống</p>";
+    }
+
+    function renderPrint() {
+        document.getElementById('print-tbody').innerHTML = printList.map((w, i) => `
+            <tr><td>${i+1}</td><td>${w.kanji}</td><td>${w.hiragana}</td><td>${w.hanviet}</td><td>${w.nghia}</td><td class="no-print"><button class="btn-muji" onclick="removePrint(${i})">Xóa</button></td></tr>
+        `).join('');
+    }
+
+    function removeHard(i) { hardWords.splice(i,1); localStorage.setItem('muji_hard_words', JSON.stringify(hardWords)); renderFlashcards(); updateCounts(); }
+    function removePrint(i) { printList.splice(i,1); localStorage.setItem('muji_print_list', JSON.stringify(printList)); renderPrint(); updateCounts(); }
+
+    function showPage(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(id === 'review-page') renderFlashcards();
+        if(id === 'print-page') renderPrint();
+        updateCounts();
+    }
+
+    function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
+    function updateCounts() { document.getElementById('count-hard').innerText = hardWords.length; document.getElementById('count-print').innerText = printList.length; }
+    window.onload = () => { renderShelf(); updateCounts(); };
+</script>
+</body>
+</html>
