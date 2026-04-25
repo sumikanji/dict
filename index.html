@@ -464,51 +464,41 @@
         <div class="bot-bubble"><span id="type-text"></span></div>
     </div>
 
-
     <div class="search-wrapper">
-       <div class="search-bar">
-    <button type="button" class="search-btn" onclick="executeSearch('click')">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-    </button>
-    
-    <input type="text" id="searchInput" class="search-input" placeholder="tìm kanji, hán việt, nghĩa..." onkeypress="executeSearch(event)">
-    <div class="lang-toggle">ja | vi</div>
-</div>
+        <div class="search-bar">
+            <button type="button" class="search-btn" onclick="executeSearch('click')">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+            <input type="text" id="searchInput" class="search-input" placeholder="tìm kanji, hán việt, nghĩa..." onkeypress="executeSearch(event)">
+            <div class="lang-toggle">ja | vi</div>
+        </div>
 
         <div class="search-tools">
             <div class="tool-btn" onclick="document.getElementById('imageInput').click()">
-    <svg viewBox="0 0 24 24">
-        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-        <circle cx="12" cy="13" r="4"></circle>
-    </svg>
-    <span class="tool-label">quét ảnh</span>
-</div>
+                <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                <span class="tool-label">quét ảnh</span>
+            </div>
             <div class="tool-btn" onclick="typeText('sumi đang nghe...')">
                 <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line></svg>
                 <span class="tool-label">giọng nói</span>
             </div>
-           <div class="tool-btn" onclick="openHandwriting()">
-    <svg viewBox="0 0 24 24">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-    </svg>
-    <span class="tool-label">viết tay</span>
-</div>
-        </div>
+            <div class="tool-btn" onclick="openHandwriting()">
+                <svg viewBox="0 0 24 24"><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                <span class="tool-label">viết tay</span>
+            </div>
         </div>
 
-        <div id="historyWrapper" class="history-container" style="display: none;">
+        <div id="historyWrapper" class="history-container" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed rgba(166, 61, 64, 0.2);">
             <div class="history-header">
                 <span>lịch sử tìm kiếm</span>
-                <span class="clear-history" onclick="clearHistory()">xóa hết</span>
+                <span class="clear-history" onclick="clearHistory()" style="cursor:pointer; color:var(--muji-red); opacity:0.6;">xóa hết</span>
             </div>
             <div id="historyList" class="history-list"></div>
         </div>
-    </div>
-    </div>
+    </div> </div>
 <div class="content-scroll">
     <div class="main-card">
       <div class="utility-banner">
@@ -659,49 +649,7 @@
         }
     }
 
-    // 3. HÀM TRA CỨU (Đổi tên thành executeSearch để khớp với HTML của bạn)
-   function executeSearch(param) {
-    let query = "";
-
-    // Trường hợp 1: Nhấn phím Enter
-    if (param && param.key === "Enter") {
-        query = document.getElementById('searchInput').value.trim().toLowerCase();
-    } 
-    // Trường hợp 2: Nhấn chuột vào nút kính lúp (truyền 'click') hoặc lịch sử (truyền string)
-    else {
-        query = (typeof param === "string" && param !== 'click') 
-                ? param 
-                : document.getElementById('searchInput').value.trim().toLowerCase();
-    }
-
-    if (!query) return;
-
-    // Cập nhật lại giá trị ô input (nếu bấm từ lịch sử)
-    document.getElementById('searchInput').value = query;
-
-    // Lưu lịch sử
-    saveToHistory(query);
-
-    typeText("đợi sumi một xíu, đang tìm từ '" + query + "'...");
-
-    // Tìm kiếm trong dữ liệu
-    const result = dictionaryData.find(item => {
-        if (Array.isArray(item)) {
-            return (item[0] === query) || (item[1] && item[1].toLowerCase() === query);
-        } else {
-            return (item.kanji === query) || (item.hanviet && item.hanviet.toLowerCase() === query);
-        }
-    });
-
-    setTimeout(() => {
-        if (result) {
-            showResult(result);
-            typeText("đây là kết quả sumi tìm được nè!");
-        } else {
-            typeText("hic, sumi không thấy từ này trong dữ liệu...");
-        }
-    }, 500);
-}
+   
 
 async function processImage(event) {
     const file = event.target.files[0];
@@ -896,12 +844,7 @@ function executeSearch(param) {
     }, 400);
 }
 
-// Cuối cùng, thêm dòng này vào window.onload để hiện lịch sử ngay khi mở web
-window.onload = () => {
-    loadAllData();
-    displayHistory(); 
-    typeText("chào cậu! cùng sumi khám phá kanji nhé.");
-};
+
     // 5. HÀM ĐIỀU KHIỂN CHAT SUPPORT (Cố định lỗi toggle)
     function toggleSupport() {
         const chatWin = document.getElementById('chatWindow');
@@ -969,11 +912,32 @@ async function recognizeHandwriting() {
         }, 700);
     }
 
-    // 6. KHỞI CHẠY KHI WEB LOAD XONG
-    window.onload = () => {
+    
+// --- ĐOẠN WINDOW.ONLOAD TỔNG HỢP DUY NHẤT ---
+window.onload = () => {
+    // 1. Nạp dữ liệu từ điển (phải nạp xong mới tìm kiếm được)
+    if (typeof initData === "function") {
         initData();
-        typeText("Chào cậu! Sumi AI đã sẵn sàng giúp cậu tra cứu.");
-    };
+    } else if (typeof loadAllData === "function") {
+        // Phòng hờ nếu cậu đổi tên hàm nạp dữ liệu
+        loadAllData();
+    }
+
+    // 2. Khởi tạo bảng vẽ viết tay
+    if (typeof initCanvas === "function") {
+        initCanvas();
+    }
+
+    // 3. Hiển thị lịch sử tìm kiếm ngay lập tức
+    if (typeof displayHistory === "function") {
+        displayHistory();
+    }
+
+    // 4. Cho Sumi chào khách
+    if (typeof typeText === "function") {
+        typeText("Chào cậu! Sumi đã nạp xong kho từ vựng và sẵn sàng rồi nè. 🍵");
+    }
+};
 </script>
 <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="processImage(event)">
 
