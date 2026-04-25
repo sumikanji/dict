@@ -3,274 +3,1085 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kanji Muji v32.7 - Original</title>
+    <title>Sumi AI - Thư Viện Sách JLPT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --muji-bg: #f7f6f2;
-            --muji-white: #ffffff;
-            --muji-text: #333333;
-            --muji-gray: #7f7f7f;
-            --muji-border: #e0dbd1;
-            --muji-accent: #8b2e2b;
-            --radius-btn: 12px;
-            --radius-box: 20px;
+            --library-bg: #f4f1ea; /* Màu giấy cũ/phòng đọc sách */
+            --wood-shelf: #d2b48c; /* Màu gỗ kệ sách */
+            --muji-red: #a63d40;
+            --book-white: #ffffff;
+            --text-main: #4a3f35; /* Nâu trầm thay cho đen */
         }
 
-        body { font-family: "Helvetica Neue", "Hiragino Sans", sans-serif; background-color: var(--muji-bg); color: var(--muji-text); margin: 0; line-height: 1.6; }
-        .page { max-width: 900px; margin: 0 auto; padding: 40px 20px; display: none; }
-        .active { display: block; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* MICRO-INTERACTIONS */
-        .btn-muji, .book { transition: transform 0.1s ease; cursor: pointer; outline: none; }
-        .btn-muji:active, .book:active { transform: scale(0.94); }
-        
-        #hint-display { 
-            font-size: 14px; color: var(--muji-gray); margin: 10px 0; height: 20px; 
-            opacity: 0; transform: translateY(-10px); transition: all 0.3s ease; visibility: hidden;
-        }
-        #hint-display.show-hint { opacity: 1; transform: translateY(0); visibility: visible; }
-
-        /* STUDY AREA */
-        .container { background: var(--muji-white); padding: 50px 20px; border-radius: var(--radius-box); border: 1px solid var(--muji-border); text-align: center; position: relative; }
-        .kanji-big { font-size: 120px; margin: 0; font-weight: 700; color: #000; line-height: 1.1; }
-        
-        .input-wrapper { position: relative; display: inline-block; width: 80%; max-width: 280px; }
-        input[type="text"] { width: 100%; border: none; border-bottom: 1px solid var(--muji-border); padding: 12px; font-size: 22px; text-align: center; outline: none; background: transparent; }
-        
-        .feedback-icon { position: absolute; right: -35px; top: 12px; font-size: 24px; opacity: 0; transition: 0.2s; }
-        .show-feedback { opacity: 1; }
-
-        .last-word-box { 
-            margin-top: 40px; padding: 15px 35px; background: #fafaf9; 
-            border: 1px solid var(--muji-border); border-radius: var(--radius-box); 
-            display: inline-flex; align-items: center; gap: 15px; animation: slideUp 0.3s ease;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Be Vietnam Pro', sans-serif; 
+            background-color: var(--library-bg); 
+            color: var(--text-main); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
         }
 
-        /* FLASHCARD */
-        .flash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-        .card { height: 240px; perspective: 1000px; cursor: pointer; }
-        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
-        .card.flipped .card-inner { transform: rotateY(180deg); }
-        .card-front, .card-back { 
-            position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
-            border: 1px solid var(--muji-border); border-radius: var(--radius-box); display: flex; 
-            flex-direction: column; justify-content: center; align-items: center; background: white; 
+        /* --- HEADER: THỦ THƯ SUMI --- */
+        .fixed-header {
+            width: 100%;
+            position: sticky; top: 0; z-index: 1000;
+            background: rgba(244, 241, 234, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex; flex-direction: column; align-items: center;
+            padding: 15px 0;
+            
         }
-        .card-back { transform: rotateY(180deg); background: #fdfdfd; padding: 15px; }
-        
-        .flash-hanviet { color: var(--muji-accent); font-weight: 700; font-size: 20px; margin-bottom: 5px; }
-        .flash-nghia { font-size: 18px; color: var(--muji-text); font-weight: 500; }
-        .flash-hira { font-size: 14px; color: var(--muji-gray); margin-bottom: 10px; }
 
-        /* UI ELEMENTS */
-        .header { border-bottom: 1px solid var(--muji-border); margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; }
-        .btn-muji { background: none; border: 1px solid var(--muji-border); color: var(--muji-gray); padding: 8px 18px; border-radius: 12px; font-size: 12px; margin: 5px; }
-        .btn-black { background: var(--muji-text); color: white; border: none; }
-        .badge { background: var(--muji-accent); color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-left: 5px; }
-        
-        #toast { position: fixed; bottom: -50px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 25px; border-radius: 20px; font-size: 12px; transition: 0.4s; opacity: 0; z-index: 1000; }
-        #toast.show { bottom: 30px; opacity: 1; }
+        #sumi-robot { width: 90px; height: 90px; animation: floating 3s infinite ease-in-out; }
+        @keyframes floating { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-        /* TABLE & PRINT */
-        .print-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
-        .print-table td, .print-table th { border: 1px solid var(--muji-border); padding: 12px; text-align: center; }
-        
-        @media print {
-            .no-print { display: none !important; }
-            body { background: white; }
-            .page { display: block !important; padding: 0; margin: 0; max-width: 100%; }
-            .print-table { width: 100%; border: 1px solid black; }
-            .print-table th, .print-table td { border: 1px solid black; }
+       .bot-bubble {
+    background: var(--book-white); 
+    padding: 12px 20px; 
+    border-radius: 18px;
+    border: 1.5px solid #dcd7cc; 
+    margin: 10px auto; 
+    color: var(--muji-red);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03); 
+    
+    /* --- KHUNG CỐ ĐỊNH CHIỀU NGANG VÀ CHIỀU CAO --- */
+    width: 280px;           /* Chiều ngang cố định, không phình ra nữa */
+    height: 85px;            /* Chiều cao cố định để không đẩy kệ sách xuống */
+    
+    /* --- CĂN CHỈNH NỘI DUNG --- */
+    display: flex;
+    align-items: center;     /* Căn giữa chữ theo chiều dọc */
+    justify-content: center; /* Căn giữa chữ theo chiều ngang */
+    overflow-y: auto;        /* Hiện thanh cuộn dọc nếu chữ quá dài */
+    overflow-x: hidden;      /* Tuyệt đối không cho tràn sang hai bên */
+    
+    line-height: 1.5;
+    word-wrap: break-word;   /* Ép xuống dòng nếu từ quá dài */
+    white-space: pre-wrap;
+    text-align: center;
+    
+    /* Thanh cuộn siêu mảnh kiểu Muji */
+    scrollbar-width: thin;
+    scrollbar-color: #dcd7cc transparent;
+}
+
+/* Thanh cuộn cho Chrome/Safari */
+.bot-bubble::-webkit-scrollbar {
+    width: 3px;
+}
+.bot-bubble::-webkit-scrollbar-thumb {
+    background: #e0dacc;
+    border-radius: 10px;
+}
+
+#type-text {
+    font-size: 14px;         /* Tăng nhẹ cỡ chữ cho dễ đọc */
+    font-weight: 700;
+    display: inline-block;   /* Quan trọng để các thuộc tính trên có tác dụng */
+    width: 100%;             /* Luôn chiếm hết chiều ngang của bong bóng */
+}
+
+        /* --- KỆ SÁCH (TABS) --- */
+        .shelf-tabs {
+            display: flex; gap: 8px; width: 92%; max-width: 480px; margin: 20px 0;
+            padding: 5px; background: #f6f1e6; border-radius: 12px;
         }
-    </style>
+        .shelf-item {
+            flex: 1; padding: 10px 5px; border-radius: 8px; text-align: center;
+            font-size: 10px; font-weight: 800; color: #8a7e72; cursor: pointer;
+            text-transform: uppercase; transition: 0.3s;
+            gap: 3px; /* Cậu có thể tăng lên 8px hoặc 10px nếu muốn rộng nữa */
+    
+    height: 75px; /* Tăng nhẹ chiều cao để không bị chật khi giãn chữ */
+
+        }
+        .shelf-item.active {
+            background: var(--muji-red); color: white;
+            box-shadow: 0 4px 12px rgba(166, 61, 64, 0.3);
+        }
+
+        /* --- KHUNG CHỈ MỤC (INDEX CARD) --- */
+        .content-scroll { width: 100%; max-width: 480px; padding: 0 20px 100px; }
+
+        .index-card {
+            background: var(--book-white); border-radius: 20px;
+            padding: 25px 20px; border: 1px solid #e0dacc;
+            box-shadow: 5px 5px 0px #e0dacc; /* Hiệu ứng xếp giấy */
+            margin-bottom: 30px;
+        }
+        .index-title {
+            font-size: 11px; font-weight: 800; color: #bbb;
+            text-transform: uppercase; letter-spacing: 3px;
+            margin-bottom: 15px; text-align: center;
+        }
+
+        /* Hàng nút N5-N1 như các gáy sách nhỏ */
+        .book-levels { display: flex; justify-content: space-between; gap: 6px; }
+        .lv-book {
+            flex: 1; border: 2px solid #eee; background: white;
+            padding: 12px 0; border-radius: 8px; font-size: 14px;
+            font-weight: 800; color: #888; cursor: pointer; transition: 0.3s;
+            position: relative;
+        }
+        .lv-book::before { /* Đường chỉ gáy sách */
+            content: ''; position: absolute; left: 4px; top: 10%; width: 2px; height: 80%;
+            background: #f0f0f0; border-radius: 2px;
+        }
+        .lv-book.active {
+            background: var(--muji-red); color: white; border-color: var(--muji-red);
+            transform: translateY(-5px); box-shadow: 0 10px 20px rgba(166, 61, 64, 0.2);
+        }
+        .lv-book.active::before { background: rgba(255,255,255,0.3); }
+
+        /* --- DANH SÁCH "TRANG SÁCH" --- */
+        /* Khung từ vựng - làm mỏng lại */
+.vocab-page {
+    background: var(--book-white); 
+    padding: 12px 18px; /* Giảm padding để khung mỏng lại */
+    border-radius: 12px;
+    margin-bottom: 8px; 
+    border-left: 4px solid var(--muji-red);
+    display: flex; 
+    align-items: center; 
+    gap: 15px;
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.02);
+}
+
+/* Cụm Kanji & Reading nằm cùng 1 hàng */
+.kanji-ink {
+    font-size: 22px; /* Thu nhỏ Kanji */
+    font-weight: 800; 
+    color: #2c2c2c;
+    min-width: 100px; /* Độ rộng vừa đủ cho cả Kanji + Reading */
+    text-align: left;
+    display: flex;
+    align-items: baseline; /* Căn chân chữ cho đều */
+    gap: 6px;
+    font-family: serif;
+}
+
+/* Cách đọc nhỏ hơn và nằm ngay sau Kanji */
+.reading-text {
+    font-size: 14px; /* Nhỏ lại để làm nền cho Kanji */
+    font-weight: 500;
+    color: #8a7e72;
+    font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+/* Thông tin nghĩa - ép trên 1 dòng */
+.page-info {
+    flex: 1;
+    overflow: hidden; /* Chống tràn */
+    white-space: nowrap; /* Ép 1 hàng */
+    text-overflow: ellipsis; /* Nếu quá dài sẽ hiện dấu ... */
+}
+
+.page-info b { 
+    font-size: 13px; 
+    color: var(--muji-red); 
+    font-weight: 800; 
+    margin-right: 10px;
+}
+
+.page-info span { 
+    font-size: 13px; 
+    color: #665c52; 
+    font-weight: 500;
+}
+
+/* Đường sọc chéo nhỏ lại cho tinh tế */
+.divider-line {
+    width: 1px;
+    height: 20px;
+    background-color: #e0dacc;
+    transform: rotate(15deg);
+    flex-shrink: 0;
+}
+/* Cột bên phải chứa 2 dòng */
+/* Cột bên phải: Chứa Hán Việt và Nghĩa */
+.info-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    overflow: hidden; /* Vẫn giữ để cắt nghĩa quá dài */
+    padding-left: 5px; /* QUAN TRỌNG: Tạo một khoảng đệm nhỏ để không bị mất chữ đầu */
+}
+
+/* Dòng Hán Việt ở trên */
+.han-viet-row {
+    font-size: 11px;
+    color: var(--muji-red);
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    line-height: 1.2; /* Tăng nhẹ để không bị mất chóp chữ */
+    white-space: normal; /* Cho phép hiển thị đầy đủ nếu tên Hán Việt dài */
+}
+
+/* Dòng Nghĩa ở dưới */
+.mean-row {
+    font-size: 13px;
+    color: #665c52;
+    font-weight: 500;
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis; /* Chỉ dòng nghĩa này mới bị cắt nếu quá dài */
+    line-height: 1.2;
+}
+
+/* Điều chỉnh lại thanh chia để không đè vào chữ */
+.divider-line {
+    width: 1.5px;
+    height: 28px;
+    background-color: #e0dacc;
+    transform: rotate(15deg);
+    flex-shrink: 0;
+    margin: 0 5px; /* Tạo khoảng cách hai bên thanh chia */
+}
+/* Khung chứa 3 nút giáo trình */
+
+.shelf-tabs {
+    display: flex; 
+    gap: 10px; 
+    width: 92%; 
+    max-width: 480px; 
+    margin: 20px 0;
+}
+
+/* Từng nút giáo trình */
+
+/* Từng nút giáo trình */
+.shelf-item {
+    flex: 1; 
+    background: #e8e2d6; /* Màu kem dễ nhìn */
+    height: 70px;        /* Tăng nhẹ chiều cao để chữ "thở" đều trên dưới */
+    border-radius: 18px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; /* Ép vào tâm dọc */
+    cursor: pointer; 
+    transition: all 0.3s ease;
+    border: none;
+    padding: 0;          /* Triệt tiêu padding gây lệch */
+}
+
+/* Tầng trên: Chữ Nhật */
+/* Khung chứa các nút - Thu hẹp lại một chút cho gọn */
+/* Khung chứa các nút - Cho phép các nút có độ rộng khác nhau */
+.shelf-tabs {
+    display: flex; 
+    gap: 12px;           /* Tăng khoảng cách giữa các nút bên trong */
+    width: 95%;          /* Chiều ngang rộng hơn */
+    max-width: 500px;    /* Giới hạn rộng hơn một chút */
+    margin: 25px 0;      /* Tăng khoảng cách trên dưới */
+    
+    /* ĐÂY LÀ PHẦN LÀM KHUNG TO RA */
+    padding: 12px;       /* Tăng lớp đệm bên trong để khung bao ngoài rộng ra */
+    background: #ffffff; /* Màu nền của "kệ sách" */
+    border-radius: 25px; /* Bo tròn lớn hơn cho sang */
+    
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); /* Thêm độ lún nhẹ cho xịn */
+}
+
+/* Từng nút giáo trình */
+/* Khung bao ngoài to hơn, bo tròn xịn */
+/* Khung bao ngoài to hơn, bo tròn xịn */
+.shelf-tabs {
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); /* Chia 3 cột */
+    gap: 12px;           /* Khoảng cách giữa các nút */
+    width: 95%;          
+    max-width: 500px;    
+    margin: 25px 0;      
+    padding: 15px;       /* Khung bao to ra */
+    background: #e0dacc; 
+    border-radius: 25px; 
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Các nút bên trong */
+.shelf-item {
+    background: #eee8db; 
+    height: 65px;        /* Chiều cao nút */
+    border-radius: 15px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center;
+    cursor: pointer; 
+    transition: 0.3s;
+    border: none;
+}
+
+.shelf-item.active {
+    background: var(--muji-red);
+    box-shadow: 0 5px 15px rgba(166, 61, 64, 0.2);
+}
+
+/* Chữ tầng trên (Nhật) */
+.shelf-item .jp-text {
+    font-size: 14px; /* Giảm nhẹ để vừa khung 3 cột */
+    font-weight: 800; 
+    color: #5d5247;
+    line-height: 1.2;
+}
+
+/* Chữ tầng dưới (Việt) */
+.shelf-item .vi-text {
+    font-size: 9px; 
+    font-weight: 700; 
+    color: #8a7e72;
+    text-transform: uppercase;
+}
+
+/* Khi active thì chữ trắng */
+.shelf-item.active .jp-text, .shelf-item.active .vi-text {
+    color: #ffffff;
+}
+/* 2. Cụm nút công cụ (Flashcard & PDF) */
+.action-tools { 
+    display: flex; 
+    gap: 12px; 
+    margin-bottom: 25px; /* Tạo khoảng cách lớn với danh sách từ vựng bên dưới */
+    width: 100%; 
+}
+
+.tool-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    border: none; /* Bỏ viền để màu đỏ phẳng trông sang hơn */
+    background: var(--muji-red); /* Màu đỏ Muji chủ đạo */
+    color: #ffffff;             /* Chữ trắng nổi bật */
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(166, 61, 64, 0.15); /* Đổ bóng nhẹ cùng tông màu */
+}
+
+/* Hiệu ứng khi di chuột */
+.tool-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(166, 61, 64, 0.25);
+}
+
+/* Hiệu ứng khi nhấn */
+.tool-btn:active {
+    transform: translateY(0);
+    filter: brightness(0.9);
+}
+
+
+
+.flashcard-btn:active, .pdf-btn:active {
+    transform: scale(0.98);
+}
+@media print {
+    /* 1. Giấu tất cả các thành phần thừa (Header, Robot, Nút bấm, Kệ sách) */
+    .fixed-header, .shelf-tabs, .index-card, .action-tools, #sumi-robot, .bot-bubble {
+        display: none !important;
+    }
+
+    /* 2. Căn chỉnh lại khung chứa để tràn lề khổ giấy */
+    body {
+        background-color: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .content-scroll {
+        max-width: 100% !important; /* Co giãn hết chiều ngang giấy */
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+   /* 3. Khu vực hiển thị danh sách từ vựng */
+#vocab-display {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Khoảng cách giữa các dòng từ vựng */
+}
+
+    /* 3. Tối ưu lại từng dòng từ vựng khi in cho đẹp */
+    .vocab-page {
+        border: 1px solid #eee !important; /* Thêm viền nhẹ thay vì đổ bóng khi in */
+        box-shadow: none !important;
+        margin-bottom: 5px !important;
+        page-break-inside: avoid; /* Không để một dòng bị cắt đôi khi sang trang */
+        background: transparent !important;
+    }
+
+    .kanji-ink {
+        color: black !important;
+    }
+
+    .han-viet-row {
+        color: #a63d40 !important; /* Giữ màu đỏ Muji cho âm Hán */
+    }
+}
+
+.modal {
+    display: none; position: fixed; z-index: 2000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    position: relative; margin: 10% auto;
+    width: 90%; max-width: 400px; text-align: center;
+}
+
+/* Hiệu ứng 3D cho thẻ */
+/* Chỉ cho phép lật khi kích vào Kanji hoặc Tap-hint, không lật khi kích vào Input */
+/* Khung chứa thẻ */
+.card {
+    width: 100%; 
+    height: 300px !important;
+    perspective: 1000px; /* Tạo độ sâu 3D */
+    position: relative;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d; /* QUAN TRỌNG: Giữ các mặt ở dạng 3D */
+    cursor: pointer;
+}
+
+/* Trạng thái khi lật */
+.card.flipped { 
+    transform: rotateY(180deg); 
+}
+
+.card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden; /* QUAN TRỌNG: Giấu mặt sau khi mặt trước đang hiện */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 25px;
+    background: #ffffff;
+    border: 2px solid #e0dacc;
+    padding: 20px;
+}
+
+
+
+
+
+.card-front #fc-kanji { font-size: 60px; font-family: serif; font-weight: 800; }
+.card-back { transform: rotateY(180deg); padding: 20px; }
+.card-back #fc-reading { font-size: 24px; color: var(--muji-red); font-weight: 800; }
+.card-back #fc-hanviet { font-size: 16px; margin: 15px 0; color: #8a7e72; font-weight: 800; }
+
+/* Nút điều hướng */
+/* Khung chứa các nút điều hướng chính */
+/* Container chứa các nút rời */
+/* Khung chứa chung cho 3 nút */
+.card-controls {
+    display: flex;
+    width: 100%;
+    max-width: 360px; /* Độ rộng vừa phải cho 3 nút */
+    margin: 35px auto 0;
+    background: #ffffff;
+    border: 1.5px solid #dcd7cc; /* Viền màu kem nhạt */
+    border-radius: 15px;       /* Bo tròn khung ngoài */
+    overflow: hidden;          /* Để các nút bên trong không chớm ra ngoài góc bo */
+}
+
+/* Định dạng chung cho mỗi nút bên trong */
+.muji-btn {
+    flex: 1;
+    height: 50px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-right: 1.5px solid #dcd7cc; /* Đường kẻ ngăn cách giữa các nút */
+}
+
+/* Nút cuối cùng không có đường kẻ bên phải */
+.muji-btn:last-child {
+    border-right: none;
+}
+
+/* PHỐI MÀU */
+
+/* Nút Trước & Tiếp theo: Đỏ Muji */
+.btn-muji-red {
+    background: #a63d40;
+    color: #ffffff;
+}
+
+/* Nút Đã thuộc: Xanh lá Pastel */
+.btn-learned-green {
+    background: #518372;
+    color: #ffffff;
+}
+
+/* Hiệu ứng khi di chuột vào từng nút */
+.muji-btn:hover {
+    filter: brightness(0.95);
+}
+
+/* Hiệu ứng khi nhấn */
+.muji-btn:active {
+    filter: brightness(0.85);
+}
+
+/* Nút Quay lại thư viện (Exit) */
+.exit-btn {
+    margin-top: 50px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    padding: 10px;
+    transition: 0.3s;
+
+    text-underline-offset: 4px;
+}
+
+.exit-btn:hover {
+    color: #ffffff;
+}
+
+/* Cụm nút chức năng phụ bên dưới */
+/* Cụm nút chức năng phụ */
+.extra-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.small-btn {
+    background: rgba(255, 255, 255, 0.1); /* Nền kính mờ */
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 8px 16px;
+    border-radius: 20px; /* Dạng viên thuốc */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+/* Hiệu ứng khi di chuột vào */
+.small-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Hiệu ứng khi nhấn */
+.small-btn:active {
+    transform: translateY(0);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Icon xoay cho nút Reset khi nhấn */
+.small-btn:active span {
+    transform: rotate(-180deg);
+    transition: 0.4s;
+}
+
+/* Hiệu ứng thẻ bay mất */
+.card.learned-fly {
+    transform: translateY(-100px) rotateX(20deg) scale(0);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.card-face {
+    transition: all 0.4s ease; /* Cho hiệu ứng mượt hơn */
+}
+/* Khung đếm số dạng nhãn Badge */
+.card-counter {
+    display: inline-block;
+    padding: 6px 16px;
+    background: rgba(255, 255, 255, 0.15); /* Nền trắng mờ */
+    backdrop-filter: blur(8px);           /* Hiệu ứng kính mờ */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50px;                 /* Bo tròn hoàn toàn */
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    margin-bottom: 25px;                 /* Khoảng cách với thẻ bài */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+/* Hiệu ứng khi số thay đổi (nháy nhẹ một cái) */
+@keyframes countPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.count-animate {
+    animation: countPop 0.3s ease-out;
+}
+  .exit-btn {
+    margin-top: 40px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 10px 25px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.exit-btn:hover {
+    color: #fff;
+    border-color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+    letter-spacing: 3px; /* Hiệu ứng giãn chữ nhẹ khi di chuột */
+}
+
+/* Đảm bảo vùng chứa các nút không bị quá chật */
+.modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.tap-hint {
+    font-size: 10px;
+    margin-top: 20px;
+    color: #5d5247;    /* Màu nâu trầm Muji */
+    opacity: 0.3;      /* Độ mờ 30% - giúp chữ ẩn hiện nhẹ nhàng */
+    letter-spacing: 1px;
+    font-weight: 500;
+    text-transform: uppercase;
+    user-select: none; /* Không cho người dùng bôi đen chữ này */
+}
+  </style>
 </head>
 <body>
 
-<div id="toast">Thông báo</div>
-
-<div id="lib-page" class="page active">
-    <div class="header">
-        <h1>耳から覚える (Từ vựng)</h1>
-        <div class="no-print">
-            <button class="btn-muji" onclick="showPage('review-page')">SỔ TAY <span id="count-hard" class="badge">0</span></button>
-            <button class="btn-muji btn-black" onclick="showPage('print-page')">IN PDF <span id="count-print" class="badge">0</span></button>
-        </div>
+<div class="fixed-header">
+    <div id="sumi-robot">
+        <svg viewBox="0 0 100 100"><rect x="10" y="20" width="80" height="60" rx="30" fill="white" stroke="#e0e0e0" stroke-width="1.5"/><rect x="22" y="32" width="56" height="36" rx="18" fill="#333"/><circle cx="38" cy="50" r="5" fill="#00ffcc"/><circle cx="62" cy="50" r="5" fill="#00ffcc"/><path d="M50 20 L50 5" stroke="#a63d40" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="5" r="7" fill="#a63d40"/></svg>
     </div>
-    <div class="shelf no-print" id="shelf-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:25px;"></div>
-</div>
+    <div class="bot-bubble"><span id="type-text">Mời cậu chọn giáo trình trên kệ sách... </span></div>
 
-<div id="study-page" class="page">
-    <button class="btn-muji no-print" onclick="showPage('lib-page')">← THƯ VIỆN</button>
-    <div class="container">
-        <div id="progress" style="font-size: 11px; text-align: right; color: var(--muji-gray);">0/0</div>
-        <div class="kanji-big" id="mainKanji">--</div>
-        <button class="btn-muji no-print" onclick="speakCurrent()" style="border-radius:50%; width:50px; height:50px; padding:0; margin: 10px 0 20px 0;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--muji-gray)"><path d="M8 5v14l11-7z"/></svg>
-        </button>
-        <div id="info-area" style="min-height: 80px; opacity:0; transition:0.3s;">
-            <div id="mainHanViet" style="font-size: 26px; color: var(--muji-accent); font-weight: bold; letter-spacing: 4px;"></div>
-            <div id="mainNghia" style="color: var(--muji-gray);"></div>
-        </div>
-        <div id="hint-display">Gợi ý: <span id="hint-text"></span></div>
-        <div class="input-wrapper">
-            <input type="text" id="inputBox" placeholder="gõ Hiragana vào đây ..." autocomplete="off">
-            <span id="feedback" class="feedback-icon"></span>
-        </div>
-        <div style="margin-top: 20px;" class="no-print">
-            <button class="btn-muji" onclick="toggleHint()">GỢI Ý 💡</button>
-            <button class="btn-muji" onclick="addToPrint()">+ THÊM VÀO BẢN IN PDF</button>
-            <button class="btn-muji btn-black" onclick="markAsHard()" style="background:#8b2e2b">LƯU ĐỂ ÔN TẬP ★</button>
-        </div>
-        <div class="last-word-box" id="last-word-container" style="display:none;">
-            <span style="font-size: 28px; font-weight: 700;" id="last-kanji"></span>
-            <span style="background: #eee; color: #333; padding: 4px 12px; border-radius: 4px; font-size: 13px; font-weight: 600;" id="last-hanviet"></span>
-            <span style="color: var(--muji-gray);" id="last-meaning"></span>
-        </div>
+   <div class="shelf-tabs">
+    <div class="shelf-item active" onclick="switchShelf('JLPT', this)">
+        <span class="jp-text">総合</span>
+        <span class="vi-text">JLPT Tổng Hợp</span>
+    </div>
+
+    <div class="shelf-item" onclick="switchShelf('Mimi', this)">
+        <span class="jp-text">耳から覚える</span>
+        <span class="vi-text">Mimikara Oboeru</span>
+    </div>
+
+    <div class="shelf-item" onclick="switchShelf('Tango', this)">
+        <span class="jp-text">単語</span>
+        <span class="vi-text">Tango</span>
+    </div>
+
+    <div class="shelf-item" onclick="switchShelf('Minna', this)">
+        <span class="jp-text">みんなの日本語</span>
+        <span class="vi-text">Minano Nihongo</span>
+    </div>
+
+    <div class="shelf-item" onclick="switchShelf('Special', this)">
+        <span class="jp-text">専門</span>
+        <span class="vi-text">Từ vựng Chuyên ngành</span>
+    </div>
+
+    <div class="shelf-item" onclick="switchShelf('Name', this)">
+        <span class="jp-text">氏名</span>
+        <span class="vi-text">Họ và tên</span>
     </div>
 </div>
-
-<div id="review-page" class="page">
-    <div class="header"><h1>Flashcards</h1><button class="btn-muji no-print" onclick="showPage('lib-page')">QUAY LẠI</button></div>
-    <div id="flashcard-list" class="flash-grid"></div>
+</div>
 </div>
 
-<div id="print-page" class="page">
-    <div class="header no-print"><h1>Danh sách in</h1><div class="no-print"><button class="btn-muji btn-black" onclick="window.print()">IN PDF</button><button class="btn-muji" onclick="showPage('lib-page')">QUAY LẠI</button></div></div>
-    <table class="print-table">
-        <thead><tr><th>STT</th><th>Kanji</th><th>Hiragana</th><th>Hán Việt</th><th>Nghĩa</th><th class="no-print">Thao tác</th></tr></thead>
-        <tbody id="print-tbody"></tbody>
-    </table>
+<div class="content-scroll">
+    <div class="index-card">
+        <div class="index-title" id="shelf-title">Kệ sách JLPT Tổng Hợp</div>
+        <div class="book-levels">
+            <button class="lv-book" onclick="filterLevel('N5', this)">N5</button>
+            <button class="lv-book" onclick="filterLevel('N4', this)">N4</button>
+            <button class="lv-book" onclick="filterLevel('N3', this)">N3</button>
+            <button class="lv-book" onclick="filterLevel('N2', this)">N2</button>
+            <button class="lv-book" onclick="filterLevel('N1', this)">N1</button>
+        </div>
+    </div>
+<div class="action-tools">
+    <button class="tool-btn flashcard-btn" onclick="openFlashcard()">
+        <span class="icon"></span> Ôn tập Flashcard
+    </button>
+    <button class="tool-btn pdf-btn" onclick="exportPDF()">
+        <span class="icon"></span> In danh sách PDF
+    </button>
+</div>
+    <div id="vocab-display">
+        </div>
 </div>
 
 <script>
-    const DATA = {
-        "N5": [{ kanji: "私", hiragana: "わたし", hanviet: "TƯ", nghia: "Tôi" }, { kanji: "人", hiragana: "ひと", hanviet: "NHÂN", nghia: "Người" }],
-        "N4": [{ kanji: "古い", hiragana: "ふるい", hanviet: "CỔ", nghia: "Cũ" }, { kanji: "新", hiragana: "あたらしい", hanviet: "TÂN", nghia: "Mới" }],
-        "N3": [{ kanji: "希望", hiragana: "きぼう", hanviet: "HY VỌNG", nghia: "Hy vọng" }],
-        "N2": [{ kanji: "範囲", hiragana: "はんい", hanviet: "PHẠM VI", nghia: "Phạm vi" }],
-        "N1": [{ kanji: "完璧", hiragana: "かんぺき", hanviet: "HOÀN BÍCH", nghia: "Hoàn hảo" }]
-    };
+    let vocabularyData = [];
+    let currentShelf = 'Mimi'; 
+    let currentLevel = null;   
+    let typingTimer = null;
+// Biến để lưu vị trí chạm màn hình
+let touchstartX = 0;
+let touchendX = 0;
 
-    let currentList = [], currentIdx = 0;
-    let printList = JSON.parse(localStorage.getItem('muji_print_list')) || [];
-    let hardWords = JSON.parse(localStorage.getItem('muji_hard_words')) || [];
+// Hàm kiểm tra hướng vuốt
+function handleGesture() {
+    const swipeThreshold = 50; // Độ dài tối thiểu của cú vuốt để nhận diện
+    
+    if (touchendX < touchstartX - swipeThreshold) {
+        // Vuốt sang trái -> Thẻ tiếp theo
+        nextCard();
+    }
+    
+    if (touchendX > touchstartX + swipeThreshold) {
+        // Vuốt sang phải -> Thẻ trước đó
+        prevCard();
+    }
+}
 
-    function playFeedbackSound(isCorrect) {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const g = audioCtx.createGain();
-        osc.connect(g); g.connect(audioCtx.destination);
-        osc.frequency.setValueAtTime(isCorrect ? 600 : 200, audioCtx.currentTime);
-        g.gain.setValueAtTime(0.05, audioCtx.currentTime);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+// Gán sự kiện vào thẻ Flashcard khi trang web tải xong
+document.addEventListener('DOMContentLoaded', () => {
+    const cardElement = document.getElementById('main-card');
+    
+    cardElement.addEventListener('touchstart', e => {
+        touchstartX = e.changedTouches[0].screenX;
+    }, {passive: true});
+
+    cardElement.addEventListener('touchend', e => {
+        touchendX = e.changedTouches[0].screenX;
+        handleGesture();
+    }, {passive: true});
+});
+    async function initLibrary() {
+        try {
+            const res = await fetch('tuvung_mimi.json');
+            if (!res.ok) throw new Error("Không tìm thấy file");
+            
+            vocabularyData = await res.json();
+            
+            // QUAN TRỌNG: Xóa sạch danh sách khi mới load trang
+            const display = document.getElementById('vocab-display');
+            display.innerHTML = "<p style='text-align:center; color:#999; margin-top:50px;'>Mời cậu chọn cấp độ (N5-N1) để bắt đầu học nhé! 🍵</p>";
+            
+            typeText("Chào cậu! Sumi đã nạp xong giáo trình Mimikara. Cậu muốn học cấp độ nào hôm nay?");
+        } catch (e) {
+            document.getElementById('vocab-display').innerHTML = 
+                "<p style='text-align:center; color: #a63d40; margin-top:50px;'>⚠️ Sumi chưa tìm thấy file dữ liệu.</p>";
+        }
     }
 
-    function renderShelf() {
-        document.getElementById('shelf-list').innerHTML = ["N5","N4","N3","N2","N1"].map(lvl => `
-            <div class="book" onclick="startLearning('${lvl}')">
-                <div style="background:white; aspect-ratio:3/4; border:1px solid var(--muji-border); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:40px; font-weight:700; margin-bottom:10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">${lvl}</div>
-                <span style="font-size:13px; color:var(--muji-gray); font-weight:600;">Học Kanji</span>
-            </div>
-        `).join('');
+    function switchShelf(shelf, el) {
+        currentShelf = shelf;
+        document.querySelectorAll('.shelf-item').forEach(s => s.classList.remove('active'));
+        el.classList.add('active');
+        
+        const names = { 
+            'JLPT': 'Kệ sách JLPT Tổng Hợp', 'Mimi': 'Kệ sách Mimikara Oboeru', 
+            'Tango': 'Kệ sách từ vựng Tango', 'Minna': 'Kệ sách Minna no Nihonngo', 
+            'Special': 'Kệ sách Từ vựng chuyên ngành', 'Name': 'Kệ sách Họ Tên người Nhật' 
+        };
+        document.getElementById('shelf-title').innerText = names[shelf];
+        
+        // Khi đổi kệ sách, cũng xóa sạch danh sách và reset level
+        currentLevel = null;
+        document.querySelectorAll('.lv-book').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById('vocab-display').innerHTML = 
+            "<p style='text-align:center; color:#999; margin-top:50px;'>Cậu hãy chọn cấp độ cho giáo trình này.</p>";
+            
+        typeText(`Đã mở ${names[shelf]}. Chọn cấp độ để xem từ vựng.`);
     }
 
-    function startLearning(lvl) { currentList = DATA[lvl]; currentIdx = 0; document.getElementById('last-word-container').style.display='none'; showPage('study-page'); loadWord(); }
+    let currentCardIndex = 0;
+let flashcardList = [];
+let originalData = []; // Để reset lại khi cần
 
-    function loadWord() {
-        const item = currentList[currentIdx];
-        document.getElementById('mainKanji').innerText = item.kanji;
-        document.getElementById('mainHanViet').innerText = item.hanviet;
-        document.getElementById('mainNghia').innerText = item.nghia;
-        document.getElementById('hint-text').innerText = item.hiragana;
-        document.getElementById('hint-display').classList.remove('show-hint');
-        document.getElementById('info-area').style.opacity = '0';
-        document.getElementById('progress').innerText = `${currentIdx + 1}/${currentList.length}`;
-        const input = document.getElementById('inputBox');
-        input.value = ""; document.getElementById('feedback').className = 'feedback-icon';
-        input.focus();
+function openFlashcard() {
+    // Lấy dữ liệu gốc
+    originalData = vocabularyData.filter(i => i.type === currentShelf && (currentLevel ? i.level === currentLevel : true));
+    
+    if (originalData.length === 0) {
+        typeText("Kệ này trống, không có gì để học cả cậu ơi!");
+        return;
     }
 
-    document.getElementById('inputBox').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            const val = e.target.value.trim();
-            const item = currentList[currentIdx];
-            const fb = document.getElementById('feedback');
-            if (val === item.hiragana) {
-                fb.innerText = "✓"; fb.style.color = "#5c8d89"; fb.className = "feedback-icon show-feedback";
-                playFeedbackSound(true); speakText(item.kanji);
-                document.getElementById('info-area').style.opacity = '1';
-                document.getElementById('last-word-container').style.display = 'inline-flex';
-                document.getElementById('last-kanji').innerText = item.kanji;
-                document.getElementById('last-hanviet').innerText = item.hanviet;
-                document.getElementById('last-meaning').innerText = " • " + item.nghia;
-                setTimeout(() => { if (currentIdx < currentList.length - 1) { currentIdx++; loadWord(); } else { showToast("Hoàn thành!"); } }, 1300);
-            } else {
-                fb.innerText = "✕"; fb.style.color = "var(--muji-accent)"; fb.className = "feedback-icon show-feedback";
-                playFeedbackSound(false);
-                setTimeout(() => { e.target.value = ""; fb.classList.remove('show-feedback'); }, 800);
+    // Sao chép sang danh sách đang học
+    flashcardList = [...originalData];
+    currentCardIndex = 0;
+    
+    showCard(currentCardIndex);
+    document.getElementById('flashcard-modal').style.display = 'block';
+}
+
+
+function flipCard() {
+    const card = document.getElementById('main-card');
+    if (card) {
+        card.classList.toggle('flipped');
+    }
+}
+
+function showCard(index) {
+    const counterEl = document.getElementById('card-counter');
+    
+    if (flashcardList.length === 0) {
+        document.getElementById('fc-kanji').innerText = "HẾT RỒI!";
+        document.getElementById('fc-reading').innerText = "";
+        document.getElementById('fc-hanviet').innerText = "";
+        document.getElementById('fc-mean').innerText = "Cậu đã thuộc toàn bộ xấp thẻ này.";
+        counterEl.innerText = "0 / 0"; // Reset counter khi hết bài
+        return;
+    }
+    
+    // Cập nhật số thứ tự: (vị trí hiện tại + 1) / tổng số thẻ còn lại
+    counterEl.innerText = `${index + 1} / ${flashcardList.length}`;
+    
+    const item = flashcardList[index];
+    const card = document.getElementById('main-card');
+    card.classList.remove('flipped', 'learned-fly');
+    
+    setTimeout(() => {
+        document.getElementById('fc-kanji').innerText = item.kanji;
+        document.getElementById('fc-reading').innerText = item.reading;
+        document.getElementById('fc-hanviet').innerText = item.hanviet ? `"${item.hanviet.toUpperCase()}"` : '"--"';
+        document.getElementById('fc-mean').innerText = item.nghia;
+        speakJapanese(item.kanji);
+    }, 150);
+}
+
+// CHỨC NĂNG: ĐÃ THUỘC (Xóa từ)
+function markAsLearned() {
+    const card = document.getElementById('main-card');
+    card.classList.add('learned-fly'); // Chạy hiệu ứng bay
+
+    setTimeout(() => {
+        // Xóa từ hiện tại khỏi danh sách flashcardList
+        flashcardList.splice(currentCardIndex, 1);
+        
+        if (flashcardList.length === 0) {
+            typeText("Tuyệt vời! Cậu đã dọn dẹp sạch sẽ bộ thẻ này.");
+            showCard(0);
+        } else {
+            // Nếu xóa từ cuối cùng, quay về từ đầu, nếu không thì giữ nguyên index
+            if (currentCardIndex >= flashcardList.length) {
+                currentCardIndex = 0;
             }
+            showCard(currentCardIndex);
         }
-    });
+    }, 400);
+}
 
-    function speakText(txt) { window.speechSynthesis.cancel(); const m = new SpeechSynthesisUtterance(txt); m.lang = 'ja-JP'; window.speechSynthesis.speak(m); }
-    function speakCurrent() { speakText(currentList[currentIdx].kanji); }
-    function toggleHint() { document.getElementById('hint-display').classList.toggle('show-hint'); }
+// CHỨC NĂNG: NGẪU NHIÊN (Xáo trộn)
+function shuffleCards() {
+    flashcardList.sort(() => Math.random() - 0.5);
+    currentCardIndex = 0;
+    showCard(currentCardIndex);
+    typeText("Đã trộn bài! Thử thách mới bắt đầu.");
+}
 
-    function addToPrint() {
-        if(!printList.find(x => x.kanji === currentList[currentIdx].kanji)) {
-            printList.push(currentList[currentIdx]); localStorage.setItem('muji_print_list', JSON.stringify(printList));
-            updateCounts(); showToast("Đã thêm vào bản in ✓");
+// CHỨC NĂNG: RESET
+function resetFlashcards() {
+    flashcardList = [...originalData]; // Khôi phục lại từ đầu
+    currentCardIndex = 0;
+    showCard(currentCardIndex);
+    typeText("Đã hồi phục toàn bộ danh sách thẻ.");
+}
+
+// Các hàm Next/Prev điều chỉnh lại để tránh lỗi khi danh sách trống
+function nextCard() {
+    if (flashcardList.length === 0) return;
+    currentCardIndex = (currentCardIndex + 1) % flashcardList.length;
+    showCard(currentCardIndex);
+}
+
+function prevCard() {
+    if (flashcardList.length === 0) return;
+    currentCardIndex = (currentCardIndex - 1 + flashcardList.length) % flashcardList.length;
+    showCard(currentCardIndex);
+}
+
+function closeFlashcard() {
+    const modal = document.getElementById('flashcard-modal');
+    modal.style.opacity = '0';
+    
+    setTimeout(() => {
+        modal.style.display = 'none';
+        modal.style.opacity = '1'; // Reset lại cho lần sau
+        typeText("Cậu đã quay lại thư viện. Nghỉ ngơi một chút nhé! 🍵");
+    }, 300);
+}
+function exportPDF() {
+    if (!currentLevel) {
+        typeText("Cậu chọn một cấp độ (N5-N1) để Sumi sắp xếp danh sách in cho đẹp nhé!");
+        return;
+    }
+
+    typeText(`Sumi đang dàn trang danh sách ${currentLevel}. Cậu hãy chọn 'Lưu dưới dạng PDF' trong cửa sổ hiện ra nhé!`);
+    
+    // Đợi một chút để người dùng đọc thông báo rồi mới mở cửa sổ in
+    setTimeout(() => {
+        window.print();
+    }, 1000);
+}
+    function filterLevel(lv, btn) {
+        if (currentLevel === lv) {
+            currentLevel = null;
+            btn.classList.remove('active');
+            // Khi bỏ chọn level -> Quay về trạng thái trống
+            document.getElementById('vocab-display').innerHTML = 
+                "<p style='text-align:center; color:#999; margin-top:50px;'>Mời cậu chọn cấp độ để xem từ vựng.</p>";
+            typeText(`Đã đóng danh sách ${lv}.`);
+        } else {
+            currentLevel = lv;
+            document.querySelectorAll('.lv-book').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateShelf(); // Chỉ lúc này mới hiện từ
+            typeText(`Đang mở trang sách cấp độ ${lv}...`);
         }
     }
 
-    function markAsHard() {
-        if(!hardWords.find(w => w.kanji === currentList[currentIdx].kanji)) {
-            hardWords.push(currentList[currentIdx]); localStorage.setItem('muji_hard_words', JSON.stringify(hardWords));
-            updateCounts(); showToast("Đã thêm vào sổ tay ★");
-        }
+    function updateShelf() {
+        // Chỉ render khi có một level được chọn
+        if (!currentLevel) return;
+
+        const data = vocabularyData.filter(i => i.type === currentShelf && i.level === currentLevel);
+        renderList(data);
     }
 
-    function renderFlashcards() {
-        const list = document.getElementById('flashcard-list');
-        list.innerHTML = hardWords.length ? hardWords.map((w, i) => `
-            <div class="card" onclick="this.classList.toggle('flipped')">
-                <div class="card-inner">
-                    <div class="card-front"><div style="font-size:36px; font-weight:bold;">${w.kanji}</div></div>
-                    <div class="card-back">
-                        <div class="flash-hanviet">${w.hanviet}</div>
-                        <div class="flash-nghia">${w.nghia}</div>
-                        <div class="flash-hira">${w.hiragana}</div>
-                        <div style="display:flex; gap:10px;">
-                            <button class="btn-muji" onclick="event.stopPropagation(); speakText('${w.kanji}')" style="padding:5px 12px;">🔊 Nghe</button>
-                            <button class="btn-muji" onclick="event.stopPropagation(); removeHard(${i})" style="padding:5px 12px;">Xóa</button>
-                        </div>
-                    </div>
+    function renderList(data) {
+    const display = document.getElementById('vocab-display');
+    display.innerHTML = ""; 
+
+    if (data.length === 0) {
+        display.innerHTML = "<p style='text-align:center; color:#999; margin-top:30px;'>Trống...</p>";
+        return;
+    }
+
+    data.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'vocab-page';
+        
+        // Hán Việt viết hoa trong ngoặc kép
+        const hanVietUpper = item.hanviet ? `"${item.hanviet.toUpperCase()}"` : '"--"';
+
+        div.innerHTML = `
+            <div class="kanji-column">
+                <div class="kanji-ink">
+                    ${item.kanji}
+                    <span class="reading-text">${item.reading || ''}</span>
                 </div>
             </div>
-        `).join('') : "<p>Sổ tay trống</p>";
+            
+            <div class="divider-line"></div>
+            
+            <div class="info-column">
+                <div class="han-viet-row">${hanVietUpper}</div>
+                <div class="mean-row">${item.nghia}</div>
+            </div>
+        `;
+        div.onclick = () => typeText(`${item.kanji} (${item.reading}): ${item.nghia}`);
+        display.appendChild(div);
+    });
+}
+
+    function typeText(text) {
+        const el = document.getElementById('type-text');
+        if (!el || !text) return;
+        if (typingTimer) clearInterval(typingTimer);
+        el.innerText = ""; 
+        let i = 0;
+        typingTimer = setInterval(() => {
+            if (i < text.length) el.innerText += text.charAt(i++);
+            else clearInterval(typingTimer);
+        }, 30);
     }
 
-    function renderPrint() {
-        document.getElementById('print-tbody').innerHTML = printList.map((w, i) => `
-            <tr><td>${i+1}</td><td>${w.kanji}</td><td>${w.hiragana}</td><td>${w.hanviet}</td><td>${w.nghia}</td><td class="no-print"><button class="btn-muji" onclick="removePrint(${i})">Xóa</button></td></tr>
-        `).join('');
-    }
-
-    function removeHard(i) { hardWords.splice(i,1); localStorage.setItem('muji_hard_words', JSON.stringify(hardWords)); renderFlashcards(); updateCounts(); }
-    function removePrint(i) { printList.splice(i,1); localStorage.setItem('muji_print_list', JSON.stringify(printList)); renderPrint(); updateCounts(); }
-
-    function showPage(id) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        if(id === 'review-page') renderFlashcards();
-        if(id === 'print-page') renderPrint();
-        updateCounts();
-    }
-
-    function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
-    function updateCounts() { document.getElementById('count-hard').innerText = hardWords.length; document.getElementById('count-print').innerText = printList.length; }
-    window.onload = () => { renderShelf(); updateCounts(); };
+    window.onload = initLibrary;
 </script>
+<div id="flashcard-modal" class="modal">
+    <div class="modal-content">
+        
+        <div id="card-counter" class="card-counter">0 / 0</div>
+      <div class="card" id="main-card" onclick="flipCard()">
+    <div class="card-face card-front">
+        <div id="fc-kanji">学習</div>
+        <div class="tap-hint">Chạm để lật xem nghĩa</div>
+    </div> 
+
+    <div class="card-face card-back">
+        <div id="fc-reading">がくしゅう</div>
+        <div id="fc-hanviet">"HỌC TẬP"</div>
+        <div id="fc-mean">Sự học tập, học hành</div>
+        <div class="tap-hint">Chạm để quay lại</div>
+    </div>
+</div>
+       <div class="card-controls">
+    <button class="muji-btn btn-muji-red" onclick="prevCard()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        <span>Trước</span>
+    </button>
+
+    <button class="muji-btn btn-learned-green" onclick="markAsLearned()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6L9 17l-5-5"/></svg>
+        <span>Đã thuộc</span>
+    </button>
+
+    <button class="muji-btn btn-muji-red" onclick="nextCard()">
+        <span>Tiếp</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+</div>
+
+<div class="extra-controls">
+    <button class="small-btn" onclick="shuffleCards()">
+        <span style="font-size: 14px;">⇄</span> NGẪU NHIÊN
+    </button>
+    
+    <button class="small-btn" onclick="resetFlashcards()">
+        <span style="font-size: 14px;">⟳</span> LÀM MỚI
+    </button>
+</div>
+<button class="exit-btn" onclick="closeFlashcard()">
+    QUAY LẠI THƯ VIỆN
+</button>
+    </div>
+</div>
 </body>
 </html>
