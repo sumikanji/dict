@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sumi Dict - Fixed Bot UI</title>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root {
             --muji-bg: #fdfaf5;
@@ -19,18 +20,29 @@
         body {
             font-family: 'Be Vietnam Pro', sans-serif;
             background-color: var(--muji-bg);
-            padding: 20px;
-            display: flex;
+            padding: 0;
+            display: block;
             flex-direction: column;
             align-items: center;
             color: var(--muji-text);
         }
-
+/* --- FIX CĂN GIỮ CHO CỤM CỐ ĐỊNH Ở TRÊN --- */
+.fixed-top-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Căn giữa nội dung bên trong */
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: var(--muji-bg); /* Nền che nội dung khi cuộn */
+}
         /* --- SỬA LỖI KHUNG BOT SUMI --- */
         .bot-container { 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
+            justify-content: center;
             margin-bottom: 30px; 
             margin-top: 10px;
             width: 100%;
@@ -55,6 +67,8 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.03); 
             color: var(--muji-red); 
             position: relative;
+            margin-left: auto;
+    margin-right: auto;
             
             /* CHỐNG DÍNH CHỮ & TRÀN KHUNG */
             width: fit-content;
@@ -75,7 +89,30 @@
         }
 
         /* --- GIỮ NGUYÊN CÁC PHẦN CÒN LẠI CỦA BẠN --- */
-        .search-wrapper { width: 100%; max-width: 480px; background: var(--white); border-radius: 20px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border: 1px solid var(--gray-border); margin-bottom: 20px; }
+        /* --- CỐ ĐỊNH KHUNG TÌM KIẾM --- */
+        .search-wrapper { 
+            width: 100%; 
+            max-width: 480px; 
+            background: var(--white); 
+            border-radius: 20px; 
+            padding: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04); 
+            border: 1px solid var(--gray-border); 
+            margin: 0 auto 20px auto; /* Căn giữa */
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        /* --- CONTAINER NỘI DUNG TRƯỢT --- */
+        .content-scroll {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 20px 100px 20px; /* Tạo khoảng trống ở cuối để cuộn thoải mái */
+            width: 100%;
+        }
+        
         .search-bar { display: flex; align-items: center; background: var(--gray-light); border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
         .search-icon { width: 18px; stroke: var(--muji-red); opacity: 0.6; margin-right: 10px; }
         .search-input { flex: 1; border: none; background: transparent; font-size: 15px; outline: none; }
@@ -314,7 +351,23 @@
     padding: 30px 0 50px 0; /* Tạo khoảng trống phía dưới cùng */
     text-align: center;
 }
+.scanning-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(166, 61, 64, 0.9); /* Màu đỏ Muji mờ */
+    z-index: 20001; display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+}
 
+.scan-line {
+    width: 250px; height: 3px; background: #00ffcc;
+    box-shadow: 0 0 20px #00ffcc;
+    animation: scanMove 2s infinite ease-in-out;
+}
+
+@keyframes scanMove {
+    0% { transform: translateY(-60px); }
+    100% { transform: translateY(60px); }
+}
 .footer-copyright p {
     font-size: 11px;
     color: #bbb; /* Màu xám nhạt tinh tế */
@@ -361,87 +414,94 @@
     background: var(--muji-red); color: white; font-weight: 700;
     text-transform: uppercase; cursor: pointer; margin-top: 10px;
 }
+.search-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin-right: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.search-btn:hover {
+    transform: scale(1.1); /* Phóng to nhẹ khi di chuột */
+}
+
+.search-btn:active {
+    transform: scale(0.9); /* Thu nhỏ nhẹ khi nhấn */
+}
+
+/* Đảm bảo icon bên trong nút vẫn giữ màu muji-red */
+.search-btn .search-icon {
+    width: 18px;
+    stroke: var(--muji-red);
+    opacity: 0.8;
+}
+.history-container { width: 100%; max-width: 480px; margin-top: 15px; padding-top: 10px; border-top: 1px dashed var(--gray-border); }
+        .history-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: #bbb; text-transform: uppercase; margin-bottom: 8px; }
+        .clear-history { cursor: pointer; color: var(--muji-red); opacity: 0.6; }
+        .history-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .history-item { background: var(--gray-light); padding: 5px 12px; border-radius: 8px; font-size: 12px; border: 1px solid var(--gray-border); cursor: pointer; }
 </style>
     </style>
 </head>
 <body>
-
+<div class="fixed-top-section">
     <div class="bot-container">
         <div id="sumi-robot">
             <svg viewBox="0 0 100 100"><rect x="10" y="20" width="80" height="60" rx="30" fill="white" stroke="#e0e0e0" stroke-width="1.5"/><rect x="22" y="32" width="56" height="36" rx="18" fill="#333"/><circle cx="38" cy="50" r="5" fill="#00ffcc"/><circle cx="62" cy="50" r="5" fill="#00ffcc"/><path d="M50 20 L50 5" stroke="#a63d40" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="5" r="7" fill="#a63d40"/></svg>
         </div>
         <div class="bot-bubble"><span id="type-text"></span></div>
     </div>
-<div class="sumi-support-wrapper">
-    <div class="chat-window" id="chatWindow">
-        <div class="chat-header">
-            <div class="header-info">
-                <div class="header-dot"></div>
-                <b>Sumi AI Support</b>
-            </div>
-            <span class="close-chat" onclick="toggleSupport()">×</span>
-        </div>
-        
-        <div class="chat-body" id="chatBody">
-            <div class="msg-bot">Chào cậu! Sumi đã sẵn sàng hỗ trợ cậu rồi đây. Cậu cần giúp gì về Kanji hay cách dùng web không? 🍵</div>
-        </div>
-        
-        <div class="chat-footer">
-            <input type="text" id="chatInput" placeholder="Nhập câu hỏi của cậu..." onkeypress="handleChat(event)">
-            <button onclick="sendChat()">➤</button>
-        </div>
-    </div>
 
-    <div class="sumi-support-fixed" onclick="toggleSupport()">
-        <div class="support-bubble" id="support-msg">Sumi hỗ trợ cậu nhé!</div>
-        <div class="support-icon">
-            <svg viewBox="0 0 100 100">
-                <rect x="10" y="20" width="80" height="60" rx="30" fill="white" stroke="#a63d40" stroke-width="2"/>
-                <rect x="22" y="32" width="56" height="36" rx="18" fill="#333"/>
-                <circle cx="38" cy="50" r="4" fill="#00ffcc"/><circle cx="62" cy="50" r="4" fill="#00ffcc"/>
-                <path d="M50 20 L50 5" stroke="#a63d40" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="5" r="7" fill="#a63d40"/>
-            </svg>
-        </div>
-    </div>
-</div>
 </div>
     <div class="search-wrapper">
-        <div class="search-bar">
-    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-    </svg>
+       <div class="search-bar">
+    <button type="button" class="search-btn" onclick="executeSearch('click')">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+    </button>
+    
     <input type="text" id="searchInput" class="search-input" placeholder="tìm kanji, hán việt, nghĩa..." onkeypress="executeSearch(event)">
     <div class="lang-toggle">ja | vi</div>
 </div>
-       <div class="search-tools">
-        <div class="tool-btn" onclick="typeText('đang mở camera để quét ảnh...')">
-            <svg viewBox="0 0 24 24">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                <circle cx="12" cy="13" r="4"></circle>
-            </svg>
-            <span class="tool-label">quét ảnh</span>
+
+        <div class="search-tools">
+            <div class="tool-btn" onclick="document.getElementById('imageInput').click()">
+    <svg viewBox="0 0 24 24">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+        <circle cx="12" cy="13" r="4"></circle>
+    </svg>
+    <span class="tool-label">quét ảnh</span>
+</div>
+            <div class="tool-btn" onclick="typeText('sumi đang nghe...')">
+                <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line></svg>
+                <span class="tool-label">giọng nói</span>
+            </div>
+           <div class="tool-btn" onclick="openHandwriting()">
+    <svg viewBox="0 0 24 24">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+    </svg>
+    <span class="tool-label">viết tay</span>
+</div>
         </div>
 
-        <div class="tool-btn" onclick="typeText('sumi đang lắng nghe cậu đây...')">
-            <svg viewBox="0 0 24 24">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                <line x1="12" y1="19" x2="12" y2="23"></line>
-            </svg>
-            <span class="tool-label">giọng nói</span>
-        </div>
-
-        <div class="tool-btn" onclick="typeText('hãy vẽ kanji vào khung nhé...')">
-            <svg viewBox="0 0 24 24">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-            <span class="tool-label">viết tay</span>
+        <div id="historyWrapper" class="history-container" style="display: none;">
+            <div class="history-header">
+                <span>lịch sử tìm kiếm</span>
+                <span class="clear-history" onclick="clearHistory()">xóa hết</span>
+            </div>
+            <div id="historyList" class="history-list"></div>
         </div>
     </div>
     </div>
-
+<div class="content-scroll">
     <div class="main-card">
       <div class="utility-banner">
     <a href="kanji/kanji.html" style="text-decoration: none;">
@@ -509,6 +569,10 @@
             </div>
         </div>
     </div>
+     <footer class="footer-copyright">
+    <p>© 2026 sumi dict. bảo lưu mọi quyền.</p>
+</footer>
+</div>
 <div id="resultPopup" class="popup-overlay">
     <div class="popup-content">
         <span class="close-popup" onclick="closePopup()">×</span>
@@ -529,6 +593,39 @@
         <button class="popup-btn" onclick="closePopup()">đóng</button>
     </div>
 </div>
+<div class="sumi-support-wrapper">
+    
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <div class="header-info">
+                <div class="header-dot"></div>
+                <b>Sumi AI Support</b>
+            </div>
+            <span class="close-chat" onclick="toggleSupport()">×</span>
+        </div>
+        
+        <div class="chat-body" id="chatBody">
+            <div class="msg-bot">Chào cậu! Sumi đã sẵn sàng hỗ trợ cậu rồi đây. Cậu cần giúp gì về Kanji hay cách dùng web không? 🍵</div>
+        </div>
+        
+        <div class="chat-footer">
+            <input type="text" id="chatInput" placeholder="Nhập câu hỏi của cậu..." onkeypress="handleChat(event)">
+            <button onclick="sendChat()">➤</button>
+        </div>
+    </div>
+
+    <div class="sumi-support-fixed" onclick="toggleSupport()">
+        <div class="support-bubble" id="support-msg">Sumi hỗ trợ cậu nhé!</div>
+        <div class="support-icon">
+            <svg viewBox="0 0 100 100">
+                <rect x="10" y="20" width="80" height="60" rx="30" fill="white" stroke="#a63d40" stroke-width="2"/>
+                <rect x="22" y="32" width="56" height="36" rx="18" fill="#333"/>
+                <circle cx="38" cy="50" r="4" fill="#00ffcc"/><circle cx="62" cy="50" r="4" fill="#00ffcc"/>
+                <path d="M50 20 L50 5" stroke="#a63d40" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="5" r="7" fill="#a63d40"/>
+            </svg>
+        </div>
+    </div>
+</div>
    <script>
     // 1. KHAI BÁO BIẾN DỮ LIỆU TOÀN CỤC
     let dictionaryData = [];
@@ -540,7 +637,8 @@
             // Tải song song 2 file
             const [res1, res2] = await Promise.all([
                 fetch('kanji_bank_1.json').catch(() => null),
-                fetch('kanji_bank_2.json').catch(() => null)
+                fetch('kanji_bank_2.json').catch(() => null),
+                fetch('tuvung.json').catch(() => null)
             ]);
 
             let data1 = res1 ? await res1.json() : [];
@@ -554,30 +652,105 @@
     }
 
     // 3. HÀM TRA CỨU (Đổi tên thành executeSearch để khớp với HTML của bạn)
-   function executeSearch(event) {
-    if (event.key === "Enter") {
-        const query = document.getElementById('searchInput').value.trim().toLowerCase();
-        if (!query) return;
+   function executeSearch(param) {
+    let query = "";
 
-        typeText("để sumi tìm thử xem nào...");
+    // Trường hợp 1: Nhấn phím Enter
+    if (param && param.key === "Enter") {
+        query = document.getElementById('searchInput').value.trim().toLowerCase();
+    } 
+    // Trường hợp 2: Nhấn chuột vào nút kính lúp (truyền 'click') hoặc lịch sử (truyền string)
+    else {
+        query = (typeof param === "string" && param !== 'click') 
+                ? param 
+                : document.getElementById('searchInput').value.trim().toLowerCase();
+    }
 
-        // dictionaryData là mảng dữ liệu từ file JSON của bạn
-        const result = dictionaryData.find(item => {
-            const matchKanji = item[0] === query;
-            const matchHanViet = item[1] && item[1].toLowerCase().includes(query);
-            const matchNghia = item[4] && item[4].some(n => n.toLowerCase().includes(query));
-            return matchKanji || matchHanViet || matchNghia;
+    if (!query) return;
+
+    // Cập nhật lại giá trị ô input (nếu bấm từ lịch sử)
+    document.getElementById('searchInput').value = query;
+
+    // Lưu lịch sử
+    saveToHistory(query);
+
+    typeText("đợi sumi một xíu, đang tìm từ '" + query + "'...");
+
+    // Tìm kiếm trong dữ liệu
+    const result = dictionaryData.find(item => {
+        if (Array.isArray(item)) {
+            return (item[0] === query) || (item[1] && item[1].toLowerCase() === query);
+        } else {
+            return (item.kanji === query) || (item.hanviet && item.hanviet.toLowerCase() === query);
+        }
+    });
+
+    setTimeout(() => {
+        if (result) {
+            showResult(result);
+            typeText("đây là kết quả sumi tìm được nè!");
+        } else {
+            typeText("hic, sumi không thấy từ này trong dữ liệu...");
+        }
+    }, 500);
+}
+
+async function processImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const overlay = document.getElementById('scanOverlay');
+    overlay.style.display = 'flex';
+    typeText("sumi đang tập trung đọc chữ trên ảnh...");
+
+    try {
+        // Tốc độ quét phụ thuộc vào mạng (để tải dữ liệu jpn)
+        const { data: { text } } = await Tesseract.recognize(file, 'jpn+eng', {
+            logger: m => {
+                if (m.status === 'recognizing text') {
+                    // Cập nhật phần trăm tiến độ nếu cậu muốn
+                    console.log("đang quét: " + (m.progress * 100).toFixed(0) + "%");
+                }
+            }
         });
 
-        setTimeout(() => {
-            if (result) {
-                showPopup(result);
-                typeText("sumi đã tìm thấy rồi nhé!");
-            } else {
-                typeText("hic, sumi không thấy từ này rồi...");
-            }
-        }, 600);
+        // Làm sạch văn bản: xóa khoảng trắng, xuống dòng
+        const cleanText = text.replace(/\s+/g, '').trim();
+
+        if (cleanText) {
+            // Chỉ lấy ký tự Kanji/Chữ đầu tiên để tra cứu cho chính xác
+            const searchTarget = cleanText.charAt(0); 
+            
+            document.getElementById('searchInput').value = searchTarget;
+            executeSearch(searchTarget); // Gọi hàm tra cứu có sẵn của cậu
+            typeText("sumi đọc được chữ: " + searchTarget);
+        } else {
+            typeText("hic, ảnh trắng hoặc mờ quá, sumi không thấy chữ nào.");
+        }
+    } catch (error) {
+        console.error(error);
+        typeText("sumi bị mỏi mắt rồi, không quét được. cậu thử lại nhé!");
+    } finally {
+        overlay.style.display = 'none';
+        event.target.value = ''; 
     }
+}
+
+function showScanningOverlay() {
+    let overlay = document.getElementById('scanOverlay');
+    if(!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'scanOverlay';
+        overlay.className = 'scanning-overlay';
+        overlay.innerHTML = '<div class="scan-line"></div><p style="margin-top:20px; font-weight:800;">SUMI ĐANG QUÉT ẢNH...</p>';
+        document.body.appendChild(overlay);
+    }
+    overlay.style.display = 'flex';
+}
+
+function hideScanningOverlay() {
+    const overlay = document.getElementById('scanOverlay');
+    if(overlay) overlay.style.display = 'none';
 }
 
 function showPopup(data) {
@@ -617,7 +790,110 @@ function closePopup() {
             }
         }, 30); 
     }
+// Hàm lưu từ khóa vào bộ nhớ máy
+function saveToHistory(query) {
+    let history = JSON.parse(localStorage.getItem('sumi_history')) || [];
+    
+    // Loại bỏ nếu từ này đã tồn tại (để đưa nó lên đầu)
+    history = history.filter(item => item !== query);
+    
+    // Thêm từ mới vào đầu danh sách
+    history.unshift(query);
+    
+    // Chỉ giữ lại tối đa 10 từ gần nhất
+    if (history.length > 10) history.pop();
+    
+    localStorage.setItem('sumi_history', JSON.stringify(history));
+    displayHistory();
+}
 
+// Hàm hiển thị lịch sử ra màn hình
+function displayHistory() {
+    const historyList = document.getElementById('historyList');
+    const historyWrapper = document.getElementById('historyWrapper');
+    const history = JSON.parse(localStorage.getItem('sumi_history')) || [];
+
+    if (history.length === 0) {
+        historyWrapper.style.display = 'none';
+        return;
+    }
+
+    historyWrapper.style.display = 'block';
+    historyList.innerHTML = '';
+
+    history.forEach(query => {
+        const span = document.createElement('span');
+        span.className = 'history-item';
+        span.innerText = query;
+        // KHI NHẤN VÀO TỪ TRONG LỊCH SỬ
+        span.onclick = () => {
+            document.getElementById('searchInput').value = query; // Đưa từ đó lên ô nhập
+            executeSearch(query); // Gọi hàm tra cứu ngay lập tức với từ khóa này
+        };
+        
+        historyList.appendChild(span);
+    });
+}
+
+// Hàm xóa toàn bộ lịch sử
+function clearHistory() {
+    localStorage.removeItem('sumi_history');
+    displayHistory();
+    typeText("đã xóa sạch dấu vết tìm kiếm rồi nhé!");
+}
+
+// CẬP NHẬT TRONG HÀM executeSearch CỦA CẬU
+function executeSearch(param) {
+    let query = "";
+
+    // 1. Nếu nhấn Enter (truyền vào event)
+    if (param && param.key === "Enter") {
+        query = document.getElementById('searchInput').value.trim().toLowerCase();
+    } 
+    // 2. Nếu nhấn vào từ trong Lịch sử (truyền vào string)
+    else if (typeof param === "string" && param !== 'click') {
+        query = param.trim().toLowerCase();
+        document.getElementById('searchInput').value = query; // Cập nhật lại ô nhập cho khớp
+    }
+    // 3. Nếu nhấn chuột vào kính lúp (truyền vào 'click')
+    else {
+        query = document.getElementById('searchInput').value.trim().toLowerCase();
+    }
+
+    if (!query) return;
+
+    // Lưu lịch sử và cập nhật giao diện lịch sử
+    saveToHistory(query);
+
+    typeText("đợi sumi một xíu, đang tìm từ '" + query + "'...");
+
+    // Tìm kiếm trong bộ dữ liệu dictionaryData
+    const result = dictionaryData.find(item => {
+        if (Array.isArray(item)) {
+            // Dữ liệu kiểu mảng (kanji_bank)
+            return (item[0] === query) || (item[1] && item[1].toLowerCase() === query);
+        } else {
+            // Dữ liệu kiểu object (tuvung.json)
+            return (item.kanji === query) || (item.hanviet && item.hanviet.toLowerCase() === query);
+        }
+    });
+
+    setTimeout(() => {
+        if (result) {
+            showPopup(result); // Hiện Popup kết quả (Hàm showPopup của cậu)
+            typeText("xong rồi nè! sumi đã tìm thấy.");
+        } else {
+            typeText("sumi không thấy từ '" + query + "' trong kho dữ liệu rồi.");
+        }
+    }, 400);
+}
+
+// Cuối cùng, thêm dòng này vào window.onload để hiện lịch sử ngay khi mở web
+window.onload = () => {
+    loadAllData();
+    displayHistory(); 
+    typeText("chào cậu! cùng sumi khám phá kanji nhé.");
+};
     // 5. HÀM ĐIỀU KHIỂN CHAT SUPPORT (Cố định lỗi toggle)
     function toggleSupport() {
         const chatWin = document.getElementById('chatWindow');
@@ -631,6 +907,38 @@ function closePopup() {
     function handleChat(e) {
         if (e.key === 'Enter') sendChat();
     }
+
+    
+
+// Mở khung vẽ khi nhấn nút
+function openHandwriting() {
+    document.getElementById('handwritingOverlay').style.display = 'flex';
+    typeText("cậu hãy vẽ thật nắn nót nhé, sumi đang đợi...");
+}
+
+async function recognizeHandwriting() {
+    typeText("để sumi xem chữ này là gì nào...");
+    
+    // Chuyển hình vẽ trên canvas thành ảnh
+    const dataURL = canvas.toDataURL('image/png');
+
+    try {
+        // Sử dụng Tesseract đã nạp ở bước trước
+        const { data: { text } } = await Tesseract.recognize(dataURL, 'jpn');
+        const cleanText = text.replace(/\s+/g, '').trim();
+
+        if (cleanText) {
+            const finalChar = cleanText.charAt(0); // Lấy chữ đầu tiên đoán được
+            document.getElementById('searchInput').value = finalChar;
+            executeSearch(finalChar);
+            closeHandwriting();
+        } else {
+            typeText("hic, sumi không nhìn ra chữ này. cậu vẽ lại rõ hơn nhé!");
+        }
+    } catch (e) {
+        typeText("lỗi nhận diện rồi cậu ơi.");
+    }
+}
 
     function sendChat() {
         const input = document.getElementById('chatInput');
@@ -659,8 +967,24 @@ function closePopup() {
         typeText("Chào cậu! Sumi AI đã sẵn sàng giúp cậu tra cứu.");
     };
 </script>
-    <footer class="footer-copyright">
-    <p>© 2026 sumi dict. bảo lưu mọi quyền.</p>
-</footer>
+<input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="processImage(event)">
+
+<div id="scanOverlay" class="scanning-overlay">
+    <div class="scan-line"></div>
+    <p style="margin-top:20px; font-weight:800; color: white;">SUMI ĐANG ĐỌC CHỮ TRÊN ẢNH...</p>
+</div>
+<div id="handwritingOverlay" class="popup-overlay">
+    <div class="popup-content" style="max-width: 400px; padding: 20px;">
+        <span class="close-popup" onclick="closeHandwriting()">×</span>
+        <p style="font-weight: 800; color: var(--muji-red); margin-bottom: 15px;">HÃY VẼ CHỮ KANJI VÀO ĐÂY</p>
+        
+        <canvas id="hwCanvas" width="300" height="300" style="border: 2px solid #eee; background: white; border-radius: 15px; cursor: crosshair;"></canvas>
+        
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="popup-btn" style="background: #ccc;" onclick="clearCanvas()">xóa</button>
+            <button class="popup-btn" onclick="recognizeHandwriting()">nhận diện</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
