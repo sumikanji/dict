@@ -29,13 +29,15 @@
 /* --- FIX CĂN GIỮ CHO CỤM CỐ ĐỊNH Ở TRÊN --- */
 .fixed-top-section {
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Căn giữa nội dung bên trong */
     position: sticky;
     top: 0;
     z-index: 1000;
-    background-color: var(--muji-bg); /* Nền che nội dung khi cuộn */
+    background-color: var(--muji-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Đảm bảo các thành phần con luôn ở giữa */
+    padding-top: 15px;
+    padding-bottom: 5px;
 }
         /* --- SỬA LỖI KHUNG BOT SUMI --- */
         .bot-container { 
@@ -91,18 +93,23 @@
         /* --- GIỮ NGUYÊN CÁC PHẦN CÒN LẠI CỦA BẠN --- */
         /* --- CỐ ĐỊNH KHUNG TÌM KIẾM --- */
         .search-wrapper { 
-            width: 100%; 
-            max-width: 480px; 
-            background: var(--white); 
-            border-radius: 20px; 
-            padding: 15px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.04); 
-            border: 1px solid var(--gray-border); 
-            margin: 0 auto 20px auto; /* Căn giữa */
-            position: sticky;
-            top: 0;
-            z-index: 999;
-        }
+    width: 92%; 
+    max-width: 480px; 
+    background: var(--white); 
+    border-radius: 20px; 
+    padding: 15px; 
+    
+    /* --- VIỀN ĐỎ MUJI MẢNH --- */
+    border: 1.5px solid rgba(166, 61, 64, 0.3); /* Đỏ Muji với độ mờ 30% để thanh thoát */
+    
+    /* Đổ bóng nhẹ tông đỏ để khung trông nổi bật và ấm áp hơn */
+    box-shadow: 0 8px 25px rgba(166, 61, 64, 0.05); 
+    
+    margin: 10px auto; 
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
 
         /* --- CONTAINER NỘI DUNG TRƯỢT --- */
         .content-scroll {
