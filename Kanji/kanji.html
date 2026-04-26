@@ -256,23 +256,12 @@
             border-bottom: 1px solid #eee;
         }
 
-       @media (max-width: 600px) {
-    /* Khi đang xem chi tiết, ta sẽ thêm class 'active' vào right-side */
-    .right-side.active {
-        display: flex !important;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 9999;
-        background: var(--muji-bg);
-        padding: 20px;
-        overflow-y: auto;
-        animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
+        @media (max-width: 800px) { .main-layout { flex-direction: column; } .right-side { position: static; } }
+    .reading-grid div {
+    transition: all 0.2s ease;
+}
 
-    /* Tạo một nút đóng ảo cho mobile */
+/* Tạo một nút đóng ảo cho mobile */
     .right-side.active::before {
         content: '✕ Đóng';
         position: absolute;
@@ -286,7 +275,7 @@
         font-size: 14px;
         z-index: 10001;
     }
-}
+
 
 @keyframes slideUp {
     from { transform: translateY(100%); opacity: 0; }
@@ -598,6 +587,19 @@ function showBoThuDetails(item) {
     const strokesRadicalRow = document.getElementById('strokes-val').parentElement.parentElement;
     if (strokesRadicalRow) strokesRadicalRow.style.display = 'none';
     
+    // 3. HIỆN TOÀN MÀN HÌNH TRÊN MOBILE
+    const rightSide = document.querySelector('.right-side');
+    if (window.innerWidth <= 600) {
+        rightSide.classList.add('active');
+        
+        // Thêm sự kiện click để đóng khi nhấn vào chữ "✕ Đóng"
+        rightSide.onclick = (e) => {
+            if (e.target === rightSide || e.offsetX > rightSide.offsetWidth - 100 && e.offsetY < 100) {
+                rightSide.classList.remove('active');
+            }
+        };
+    }
+
     // ẨN KHUNG ÂM ON VÀ ÂM KUN
     const readingGrid = document.getElementById('on-val').parentElement.parentElement;
     if (readingGrid) readingGrid.style.display = 'none';
@@ -706,18 +708,6 @@ function showDetails(item) {
     // ĐỔ DỮ LIỆU SỐ NÉT & BỘ THỦ (Lấy từ item.strokes và item.radical)
     document.getElementById('strokes-val').innerText = item.strokes || "-";
     document.getElementById('radical-val').innerText = item.radical || "-";
-    // 3. HIỆN TOÀN MÀN HÌNH TRÊN MOBILE
-    const rightSide = document.querySelector('.right-side');
-    if (window.innerWidth <= 600) {
-        rightSide.classList.add('active');
-        
-        // Thêm sự kiện click để đóng khi nhấn vào chữ "✕ Đóng"
-        rightSide.onclick = (e) => {
-            if (e.target === rightSide || e.offsetX > rightSide.offsetWidth - 100 && e.offsetY < 100) {
-                rightSide.classList.remove('active');
-            }
-        };
-    }
 
     const vSection = document.getElementById('vocab-section');
     const vList = document.getElementById('vocab-list');
@@ -725,7 +715,6 @@ function showDetails(item) {
 // HIỆN LẠI KHUNG ON/KUN KHI XEM KANJI
     const readingGrid = document.querySelector('.reading-grid') || document.getElementById('on-val').parentElement.parentElement;
     if (readingGrid) readingGrid.style.display = 'flex';
-    
     // HIỂN THỊ TỪ VỰNG: Kanji đỏ to, Hiragana xám
     if (item.v && item.v.length > 0) {
         vSection.style.display = 'block';
