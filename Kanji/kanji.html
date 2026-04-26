@@ -35,10 +35,7 @@
         /* --- BOT AREA --- */
         .bot-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; min-height: 180px; justify-content: flex-end; }
         #sumi-robot { width: 120px; height: 120px; position: relative; animation: floatingSumi 3s ease-in-out infinite; }
-        @keyframes slideUp {
-    from { transform: translateY(100%); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
+        @keyframes floatingSumi { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
         .bot-bubble {
             background: white; padding: 12px 20px; border-radius: 20px; border: 1px solid var(--gray-border); 
             font-size: 15px; font-weight: 600; margin-top: 10px; width: 100%; max-width: 420px;
@@ -258,35 +255,42 @@
             min-height: 60px; justify-content: center; padding: 5px;
             border-bottom: 1px solid #eee;
         }
-/* Thanh ngang nhỏ trên đầu Popup (giống app thật) */
-.popup-content::before {
-    content: '';
-    position: absolute;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40px;
-    height: 4px;
-    background: #e0e0e0;
-    border-radius: 2px;
-    width: 95%;
-    max-width: 380px;
-    border-radius: 32px 32px 20px 20px !important;
-    padding-top: 40px !important;
+
+       @media (max-width: 600px) {
+    /* Khi đang xem chi tiết, ta sẽ thêm class 'active' vào right-side */
+    .right-side.active {
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 9999;
+        background: var(--muji-bg);
+        padding: 20px;
+        overflow-y: auto;
+        animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Tạo một nút đóng ảo cho mobile */
+    .right-side.active::before {
+        content: '✕ Đóng';
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: var(--muji-red);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 14px;
+        z-index: 10001;
+    }
 }
 
-        /* Khi mở trên điện thoại, áp dụng hiệu ứng trượt */
-@media (max-width: 600px) {
-    .popup-overlay {
-        align-items: flex-end; /* Đẩy popup xuống sát đáy màn hình */
-        padding-bottom: 0;
-    }
-    
-    .popup-content {
-        animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        border-bottom-left-radius: 0 !important;
-        border-bottom-right-radius: 0 !important;
-    }
+@keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 /* Hiệu ứng nhẹ khi di chuột vào ô (tùy chọn) */
@@ -371,8 +375,7 @@
             </div>
             <div class="master-box">
                 <div class="kanji-grid" id="kanji-grid"></div>
-                <div class="kanji-item" onclick="showWordDetailByText('Học')">学</div>
-                <div class="kanji-item" onclick="showWordDetailByText('Sinh')">生</div>
+               
             </div>
         </div>
 
@@ -703,6 +706,18 @@ function showDetails(item) {
     // ĐỔ DỮ LIỆU SỐ NÉT & BỘ THỦ (Lấy từ item.strokes và item.radical)
     document.getElementById('strokes-val').innerText = item.strokes || "-";
     document.getElementById('radical-val').innerText = item.radical || "-";
+    // 3. HIỆN TOÀN MÀN HÌNH TRÊN MOBILE
+    const rightSide = document.querySelector('.right-side');
+    if (window.innerWidth <= 600) {
+        rightSide.classList.add('active');
+        
+        // Thêm sự kiện click để đóng khi nhấn vào chữ "✕ Đóng"
+        rightSide.onclick = (e) => {
+            if (e.target === rightSide || e.offsetX > rightSide.offsetWidth - 100 && e.offsetY < 100) {
+                rightSide.classList.remove('active');
+            }
+        };
+    }
 
     const vSection = document.getElementById('vocab-section');
     const vList = document.getElementById('vocab-list');
@@ -710,6 +725,7 @@ function showDetails(item) {
 // HIỆN LẠI KHUNG ON/KUN KHI XEM KANJI
     const readingGrid = document.querySelector('.reading-grid') || document.getElementById('on-val').parentElement.parentElement;
     if (readingGrid) readingGrid.style.display = 'flex';
+    
     // HIỂN THỊ TỪ VỰNG: Kanji đỏ to, Hiragana xám
     if (item.v && item.v.length > 0) {
         vSection.style.display = 'block';
@@ -729,32 +745,6 @@ function showDetails(item) {
         vSection.style.display = 'none';
     }
     
-    // Hàm mở nhanh Preview Card khi click vào một chữ Kanji bất kỳ
-async function showWordDetailByText(kanjiChar) {
-    try {
-        // Tìm từ trong IndexedDB khớp chính xác với chữ Kanji này
-        const results = await db.words
-            .where('searchTerms')
-            .equals(kanjiChar.toLowerCase())
-            .toArray();
-
-        if (results && results.length > 0) {
-            // Lấy kết quả đầu tiên tìm được và mở popup
-            showWordDetail(results[0].id);
-            
-            // Hiệu ứng rung nhẹ trên điện thoại (Haptic Feedback)
-            if (window.navigator.vibrate) window.navigator.vibrate(15);
-        } else {
-            // Nếu không có trong từ điển lớn, thử tìm trong Kanji Bank
-            const res = dictionaryData.find(item => 
-                Array.isArray(item) ? item[0] === kanjiChar : item.kanji === kanjiChar
-            );
-            if (res) showPopup(res);
-        }
-    } catch (err) {
-        console.error("Lỗi khi mở Preview Card:", err);
-    }
-}
     // Vẽ animation
     document.getElementById('writer-canvas').innerHTML = '';
     HanziWriter.create('writer-canvas', item.c, { 
