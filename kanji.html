@@ -257,24 +257,40 @@
         }
 
        @media (max-width: 600px) {
-    .main-layout {
-        flex-direction: column; /* Chuyển sang dạng dọc */
+    /* Khi đang xem chi tiết, ta sẽ thêm class 'active' vào right-side */
+    .right-side.active {
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 9999;
+        background: var(--muji-bg);
+        padding: 20px;
+        overflow-y: auto;
+        animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    .right-side {
-        width: 100%;
-        position: static; /* Bỏ sticky trên mobile để cuộn tự nhiên */
-        margin-top: 20px;
-    }
-    .preview-card {
-        border: 2px solid var(--muji-red); /* Làm nổi bật card khi được chọn */
-        animation: pulseBorder 1s;
+
+    /* Tạo một nút đóng ảo cho mobile */
+    .right-side.active::before {
+        content: '✕ Đóng';
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: var(--muji-red);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 14px;
+        z-index: 10001;
     }
 }
 
-@keyframes pulseBorder {
-    0% { box-shadow: 0 0 0 0 rgba(166, 61, 64, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(166, 61, 64, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(166, 61, 64, 0); }
+@keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 /* Hiệu ứng nhẹ khi di chuột vào ô (tùy chọn) */
@@ -690,6 +706,18 @@ function showDetails(item) {
     // ĐỔ DỮ LIỆU SỐ NÉT & BỘ THỦ (Lấy từ item.strokes và item.radical)
     document.getElementById('strokes-val').innerText = item.strokes || "-";
     document.getElementById('radical-val').innerText = item.radical || "-";
+    // 3. HIỆN TOÀN MÀN HÌNH TRÊN MOBILE
+    const rightSide = document.querySelector('.right-side');
+    if (window.innerWidth <= 600) {
+        rightSide.classList.add('active');
+        
+        // Thêm sự kiện click để đóng khi nhấn vào chữ "✕ Đóng"
+        rightSide.onclick = (e) => {
+            if (e.target === rightSide || e.offsetX > rightSide.offsetWidth - 100 && e.offsetY < 100) {
+                rightSide.classList.remove('active');
+            }
+        };
+    }
 
     const vSection = document.getElementById('vocab-section');
     const vList = document.getElementById('vocab-list');
@@ -697,6 +725,7 @@ function showDetails(item) {
 // HIỆN LẠI KHUNG ON/KUN KHI XEM KANJI
     const readingGrid = document.querySelector('.reading-grid') || document.getElementById('on-val').parentElement.parentElement;
     if (readingGrid) readingGrid.style.display = 'flex';
+    
     // HIỂN THỊ TỪ VỰNG: Kanji đỏ to, Hiragana xám
     if (item.v && item.v.length > 0) {
         vSection.style.display = 'block';
