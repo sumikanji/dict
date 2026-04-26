@@ -753,7 +753,13 @@ function showDetails(item) {
     } else {
         vSection.style.display = 'none';
     }
-    
+    // 3. KÍCH HOẠT PREVIEW CARD TRÊN MOBILE
+    if (window.innerWidth <= 600) {
+        const rightSide = document.querySelector('.right-side');
+        rightSide.classList.add('active');
+        // Cuộn lên đầu Card
+        rightSide.scrollTop = 0;
+    }
     // Vẽ animation
     document.getElementById('writer-canvas').innerHTML = '';
     HanziWriter.create('writer-canvas', item.c, { 
