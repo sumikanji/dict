@@ -256,9 +256,28 @@
             border-bottom: 1px solid #eee;
         }
 
-        @media (max-width: 800px) { .main-layout { flex-direction: column; } .right-side { position: static; } }
-    .reading-grid div {
-    transition: all 0.2s ease;
+        @media (max-width: 600px) {
+    /* Trả bố cục chính về 1 cột để không bị vỡ */
+    .main-layout { flex-direction: column; }
+    
+    /* Ẩn khung bên phải mặc định trên mobile */
+    .right-side { display: none; }
+
+    /* Khi kích hoạt (có class active), nhảy lên toàn màn hình */
+    .right-side.active {
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: var(--muji-bg);
+        padding: 20px;
+        overflow-y: auto;
+        animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
 }
 
 /* Tạo một nút đóng ảo cho mobile */
@@ -587,6 +606,14 @@ function showBoThuDetails(item) {
     const strokesRadicalRow = document.getElementById('strokes-val').parentElement.parentElement;
     if (strokesRadicalRow) strokesRadicalRow.style.display = 'none';
     
+    
+    // ẨN KHUNG ÂM ON VÀ ÂM KUN
+    const readingGrid = document.getElementById('on-val').parentElement.parentElement;
+    if (readingGrid) readingGrid.style.display = 'none';
+
+    // Ẩn phần từ vựng mở rộng
+    document.getElementById('vocab-section').style.display = 'none';
+
     // 3. HIỆN TOÀN MÀN HÌNH TRÊN MOBILE
     const rightSide = document.querySelector('.right-side');
     if (window.innerWidth <= 600) {
@@ -599,13 +626,6 @@ function showBoThuDetails(item) {
             }
         };
     }
-
-    // ẨN KHUNG ÂM ON VÀ ÂM KUN
-    const readingGrid = document.getElementById('on-val').parentElement.parentElement;
-    if (readingGrid) readingGrid.style.display = 'none';
-
-    // Ẩn phần từ vựng mở rộng
-    document.getElementById('vocab-section').style.display = 'none';
     
     // 4. VẼ ANIMATION CHO CHỮ ĐẦU TIÊN
     document.getElementById('writer-canvas').innerHTML = '';
