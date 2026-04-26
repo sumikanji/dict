@@ -257,6 +257,53 @@
         }
 
         @media (max-width: 800px) { .main-layout { flex-direction: column; } .right-side { position: static; } }
+    .reading-grid div {
+    transition: all 0.2s ease;
+}
+
+/* Hiệu ứng nhẹ khi di chuột vào ô (tùy chọn) */
+.reading-grid div:hover {
+    border-color: #d0d0d0;
+    background: #fff;
+}
+/* Kanji trong từ vựng: To và màu đỏ Muji */
+/* Kanji trong từ vựng: Đổi sang font Klee One và chỉnh màu Muji */
+/* Khung nền xám cho mỗi từ vựng */
+.vocab-item {
+    background: var(--gray-cell); /* Màu xám nhạt #f5f5f5 */
+    padding: 10px 16px;
+    border-radius: 14px; /* Bo góc tròn trịa */
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    border: 1px solid rgba(0,0,0,0.02); /* Viền cực mảnh để tạo khối */
+    transition: transform 0.2s;
+}
+
+/* Chữ Kanji: Đậm hơn, font Klee One, màu đỏ Muji */
+.vocab-jp {
+    font-family: 'Klee One', cursive;
+    font-size: 22px; 
+    font-weight: 900; /* Làm đậm tối đa */
+    color: var(--muji-red);
+    margin-right: 8px;
+    line-height: 1;
+}
+
+/* Hiragana: Màu xám, không ngoặc */
+.vocab-reading {
+    font-size: 14px;
+    color: #888;
+    font-weight: 500;
+}
+
+/* Nghĩa tiếng Việt: Đẩy về bên phải */
+.vocab-vn {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muji-text);
+    margin-left: auto;
+}
     </style>
 </head>
 <body>
@@ -307,18 +354,43 @@
                 <div id="writer-canvas"></div>
                 <div class="info-panel" style="width: 100%; text-align: center;">
                     <div class="hv-tag" id="hv-val">SUMI AI</div>
-                    <div id="mean-val" style="color: #666; margin-top: 5px;">Chọn chữ để học!</div>
-                    <div class="reading-grid">
-                        <div class="read-box"><span style="font-size: 10px; color: #aaa;">ON</span><div id="on-val" style="font-weight: 700;">-</div></div>
-                        <div class="read-box"><span style="font-size: 10px; color: #aaa;">KUN</span><div id="kun-val" style="font-weight: 700;">-</div></div>
-                    </div>
-                    <div id="vocab-section" style="display:none; text-align: left; width: 100%; margin-top: 15px;">
-                        <span style="font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase;">Từ vựng mở rộng</span>
-                        <div id="vocab-list" style="margin-top: 8px;"></div>
-                        <div id="related-section" class="related-kanji-container" style="display:none;">
-    <div class="related-title">Chữ Kanji cùng bộ thủ</div>
-    <div id="related-grid" class="related-grid"></div>
+                    <div id="mean-val" style="color: #666; margin-top: 5px; font-size: 16px;">Chọn chữ để học!</div>
+
+<hr style="border: none; border-top: 1px dashed #e8e8e8; width: 100%; margin: 15px 0;">
+
+<div style="display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 12px; width: 100%;">
+    <div style="text-align: center;">
+        <span style="font-size: 9px; font-weight: 800; color: #bbb; text-transform: uppercase; display: block; letter-spacing: 0.5px; margin-bottom: 2px;">Số nét</span>
+        <span id="strokes-val" style="font-size: 14px; font-weight: 700; color: var(--muji-text);">-</span>
+    </div>
+
+    <div style="height: 18px; width: 1px; background-color: #eee;"></div>
+
+    <div style="text-align: center;">
+        <span style="font-size: 9px; font-weight: 800; color: #bbb; text-transform: uppercase; display: block; letter-spacing: 0.5px; margin-bottom: 2px;">Bộ thủ</span>
+        <span id="radical-val" style="font-size: 14px; font-weight: 700; color: var(--muji-text);">-</span>
+    </div>
 </div>
+                   <div style="display: flex; width: 100%; border: 1px solid #e8e8e8; border-radius: 12px; background: var(--muji-bg); margin-top: 10px; overflow: hidden; align-items: stretch;">
+    
+    <div style="flex: 1; display: flex; align-items: center; padding: 12px 15px;">
+        <span style="font-size: 10px; font-weight: 800; color: #bbb; text-transform: uppercase; width: 30px; letter-spacing: 1px;">On</span>
+        <div id="on-val" style="flex: 1; font-weight: 700; color: var(--muji-text); text-align: left; margin-left: 10px; font-size: 15px;">-</div>
+    </div>
+
+    <div style="width: 1px; background-color: #eee; margin: 10px 0;"></div>
+
+    <div style="flex: 1; display: flex; align-items: center; padding: 12px 15px;">
+        <span style="font-size: 10px; font-weight: 800; color: #bbb; text-transform: uppercase; width: 30px; letter-spacing: 1px;">Kun</span>
+        <div id="kun-val" style="flex: 1; font-weight: 700; color: var(--muji-text); text-align: left; margin-left: 10px; font-size: 15px;">-</div>
+    </div>
+</div>
+</div>
+                    <div id="vocab-section" style="display:none; text-align: left; width: 100%; margin-top: 15px;">
+        <span style="font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase;">Từ vựng mở rộng</span>
+        <div id="vocab-list" style="margin-top: 8px;"></div>
+        
+        
                     </div>
                 </div>
             </div>
@@ -469,33 +541,46 @@ function renderBoThuGrid(data) {
     });
 }
 
-// Hàm hiển thị chi tiết bộ thủ vào bảng bên phải
 function showBoThuDetails(item) {
-    // Lấy chữ chính để vẽ (HanziWriter chỉ vẽ được 1 chữ)
-    const mainChar = item.BO ? item.BO.split(',')[0].trim() : "";
-    // Kích hoạt lọc các Kanji có bộ thủ này
-    displayRelatedKanji(mainChar);
-    typeText(`Bộ thủ: ${mainChar} - Ý nghĩa: ${item.NGHIA}`);
-    window.currentSelectedKanji = mainChar;
+    // 1. Lấy toàn bộ các chữ trong phần BO (ví dụ: "人, 亻")
+    const allChars = item.BO || "";
+    // Chữ đầu tiên dùng để Robot vẽ mẫu
+    const firstChar = allChars.split(',')[0].trim();
     
-    // Đổ dữ liệu vào bảng bên phải - chú ý tên thuộc tính VIẾT HOA
-    document.getElementById('hv-val').textContent = item["TEN BO"] || "---"; 
+    typeText(`Bộ thủ: ${allChars} - Ý nghĩa: ${item.NGHIA}`);
+    window.currentSelectedKanji = firstChar;
+    
+    // 2. HIỂN THỊ MẶT CHỮ TO VÀ TÊN HÁN VIỆT
+    // Tôi sử dụng font Klee One và cỡ chữ 55px để mặt chữ nổi bật
+    document.getElementById('hv-val').innerHTML = `
+        <div style="font-family: 'Klee One', cursive; font-size: 55px; line-height: 1.2; margin-bottom: 5px; color: var(--muji-red);">
+            ${allChars}
+        </div>
+        <div style="font-size: 24px; letter-spacing: 4px; color: var(--muji-text);">${item["TEN BO"] || "---"}</div>
+    `;
+
     document.getElementById('mean-val').textContent = item.NGHIA || "Chưa có nghĩa";
-    document.getElementById('on-val').textContent = "STT: " + (item.STT || "0");
-    document.getElementById('kun-val').textContent = "-";
     
+  // ẨN PHẦN SỐ NÉT VÀ BỘ THỦ NHỎ (Cả hàng ngang chứa dấu |)
+    const strokesRadicalRow = document.getElementById('strokes-val').parentElement.parentElement;
+    if (strokesRadicalRow) strokesRadicalRow.style.display = 'none';
+    
+    // ẨN KHUNG ÂM ON VÀ ÂM KUN
+    const readingGrid = document.getElementById('on-val').parentElement.parentElement;
+    if (readingGrid) readingGrid.style.display = 'none';
+
+    // Ẩn phần từ vựng mở rộng
     document.getElementById('vocab-section').style.display = 'none';
     
-    // Vẽ animation
+    // 4. VẼ ANIMATION CHO CHỮ ĐẦU TIÊN
     document.getElementById('writer-canvas').innerHTML = '';
-    if (mainChar) {
-        HanziWriter.create('writer-canvas', mainChar, { 
-            width: 160, 
-            height: 160, 
-            strokeColor: '#a63d40' 
+    if (firstChar) {
+        HanziWriter.create('writer-canvas', firstChar, { 
+            width: 160, height: 160, strokeColor: '#a63d40' 
         }).animateCharacter();
     }
 }
+
         // 1. DỮ LIỆU
         async function loadData() {
             try {
@@ -574,23 +659,52 @@ function showBoThuDetails(item) {
     });
 }
 
-        function showDetails(item) {
-            typeText(`Cậu đang xem chi tiết chữ "${item.c}". Hãy nhìn cách viết ở trong khung nhé!`);
-            window.currentSelectedKanji = item.c;
-            document.getElementById('hv-val').textContent = item.hv;
-            document.getElementById('mean-val').textContent = item.m;
-            document.getElementById('on-val').textContent = item.on;
-            document.getElementById('kun-val').textContent = item.kun;
-            const vSection = document.getElementById('vocab-section');
-            const vList = document.getElementById('vocab-list');
-            vList.innerHTML = '';
-            if (item.v && item.v.length > 0) {
-                vSection.style.display = 'block';
-                item.v.forEach(v => { vList.innerHTML += `<div class="vocab-item"><b>${v.w}</b> <span>${v.n}</span></div>`; });
-            } else { vSection.style.display = 'none'; }
-            document.getElementById('writer-canvas').innerHTML = '';
-            HanziWriter.create('writer-canvas', item.c, { width: 160, height: 160, strokeColor: '#a63d40' }).animateCharacter();
-        }
+       // Hàm hiển thị chi tiết chữ Kanji (N1-N5)
+function showDetails(item) {
+    typeText(`Cậu đang xem chi tiết chữ "${item.c}". Hãy nhìn cách viết ở trong khung nhé!`);
+    window.currentSelectedKanji = item.c;
+    
+    // Đổ dữ liệu cơ bản
+    document.getElementById('hv-val').textContent = item.hv || "---";
+    document.getElementById('mean-val').textContent = item.m || "";
+    document.getElementById('on-val').textContent = item.on || "-";
+    document.getElementById('kun-val').textContent = item.kun || "-";
+    
+    // ĐỔ DỮ LIỆU SỐ NÉT & BỘ THỦ (Lấy từ item.strokes và item.radical)
+    document.getElementById('strokes-val').innerText = item.strokes || "-";
+    document.getElementById('radical-val').innerText = item.radical || "-";
+
+    const vSection = document.getElementById('vocab-section');
+    const vList = document.getElementById('vocab-list');
+    vList.innerHTML = '';
+// HIỆN LẠI KHUNG ON/KUN KHI XEM KANJI
+    const readingGrid = document.querySelector('.reading-grid') || document.getElementById('on-val').parentElement.parentElement;
+    if (readingGrid) readingGrid.style.display = 'flex';
+    // HIỂN THỊ TỪ VỰNG: Kanji đỏ to, Hiragana xám
+    if (item.v && item.v.length > 0) {
+        vSection.style.display = 'block';
+        item.v.forEach(v => {
+            if (v.w || v.r || v.n) {
+                vList.innerHTML += `
+                    <div class="vocab-item">
+                        <div style="display: flex; align-items: baseline;">
+                            <span class="vocab-jp">${v.w || ""}</span>
+                            <span class="vocab-reading">${v.r ? '(' + v.r + ')' : ""}</span>
+                        </div>
+                        <span class="vocab-vn">${v.n || ""}</span>
+                    </div>`;
+            }
+        });
+    } else {
+        vSection.style.display = 'none';
+    }
+    
+    // Vẽ animation
+    document.getElementById('writer-canvas').innerHTML = '';
+    HanziWriter.create('writer-canvas', item.c, { 
+        width: 160, height: 160, strokeColor: '#a63d40' 
+    }).animateCharacter();
+}
 
         // 2. HỆ THỐNG VIẾT TAY (ĐÃ FIX TRIỆT ĐỂ)
         const modalCanvas = document.getElementById('hw-canvas-modal');
