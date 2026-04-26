@@ -6,6 +6,7 @@
     <title>Sumi Dict - Fixed Bot UI</title>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <style>
         :root {
             --muji-bg: #fdfaf5;
@@ -394,9 +395,19 @@
 /* Khung nội dung */
 .popup-content {
     background: var(--muji-bg);
-    width: 90%; max-width: 350px;
-    padding: 30px; border-radius: 25px;
-    position: relative; text-align: center;
+    width: 90%; 
+    max-width: 350px;
+    padding: 30px; 
+    border-radius: 25px;
+    position: relative; 
+    text-align: center;
+    
+    /* CO GIÃN TỰ NHIÊN */
+    height: auto; 
+    min-height: 200px; 
+    max-height: 90vh; /* Không cao quá màn hình */
+    overflow-y: auto; /* Hiện thanh cuộn nếu nội dung quá dài */
+    
     box-shadow: 0 20px 60px rgba(0,0,0,0.2);
     animation: popupShow 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -452,6 +463,80 @@
         .clear-history { cursor: pointer; color: var(--muji-red); opacity: 0.6; }
         .history-list { display: flex; flex-wrap: wrap; gap: 8px; }
         .history-item { background: var(--gray-light); padding: 5px 12px; border-radius: 8px; font-size: 12px; border: 1px solid var(--gray-border); cursor: pointer; }
+#result-container .result-item {
+    background: var(--white);
+    padding: 18px;
+    border-radius: 20px;
+    border: 1px solid var(--gray-border);
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+
+#result-container {
+    width: 100%;
+    max-width: 480px;
+    height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
+    background: white; /* Đổi sang nền trắng cho nổi bật khi hiện */
+    border-radius: 20px;
+    border: 1.5px solid var(--gray-border);
+    margin-bottom: 20px;
+    
+    /* QUAN TRỌNG: Ẩn ngay từ đầu */
+    display: none; 
+    
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+/* Tùy chỉnh thanh cuộn cho xinh hơn (Muji style) */
+#result-container::-webkit-scrollbar {
+    width: 6px;
+}
+#result-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+#result-container::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 10px;
+}
+#result-container::-webkit-scrollbar-thumb:hover {
+    background: var(--muji-red);
+}
+
+.res-kanji {
+    color: var(--muji-red);
+    font-weight: 800;
+    font-size: 20px;
+    display: block;
+}
+
+.res-kana {
+    font-size: 13px;
+    color: #888;
+    font-weight: 600;
+}
+
+.res-mean {
+    font-size: 14px;
+    margin-top: 8px;
+    color: var(--muji-text);
+    line-height: 1.5;
+}
+#popKanji {
+    color: var(--muji-red);
+    margin-bottom: 10px;
+    width: 100%;
+    display: block;
+    white-space: nowrap; /* Giữ chữ trên 1 dòng */
+    overflow: visible;   /* Cho phép hiển thị hết, không cắt bằng dấu ... */
+    text-align: center;
+    line-height: 1.2;
+    transition: font-size 0.1s ease;
+}
 </style>
     </style>
 </head>
@@ -500,9 +585,10 @@
         </div>
     </div> </div>
 <div class="content-scroll">
+    <div id="result-container" style="width: 100%; max-width: 480px; margin-bottom: 20px;"></div>
     <div class="main-card">
       <div class="utility-banner">
-    <a href="Kanji/kanji.html" style="text-decoration: none;">
+    <a href="kanji/kanji.html" style="text-decoration: none;">
         <div class="banner-item">
             <div class="banner-sq-icon">
                 <span class="kanji-text">学</span>
@@ -511,7 +597,7 @@
         </div>
     </a>
 
-   <a href="JLPT/jlpt.html" style="text-decoration: none;">
+   <a href="jlpt/jlpt.html" style="text-decoration: none;">
         <div class="banner-item">
             <div class="banner-sq-icon">
                 <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
@@ -576,7 +662,10 @@
         <span class="close-popup" onclick="closePopup()">×</span>
         <div class="popup-header">
             <h1 id="popKanji">亜</h1>
-            <p id="popHanViet">A Á</p>
+            <div class="popup-reading-group" style="margin-top: 10px;">
+    <p id="popKana" style="font-size: 18px; color: #666; font-weight: 600; margin-bottom: 4px;"></p>
+    <p id="popHanViet" style="font-size: 15px; color: var(--muji-red); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;"></p>
+</div>
         </div>
         <div class="popup-body">
             <div class="info-item">
@@ -588,6 +677,7 @@
                 <p id="popDetail"></p>
             </div>
         </div>
+        
         <button class="popup-btn" onclick="closePopup()">đóng</button>
     </div>
 </div>
@@ -625,319 +715,356 @@
     </div>
 </div>
    <script>
-    // 1. KHAI BÁO BIẾN DỮ LIỆU TOÀN CỤC
-    let dictionaryData = [];
-    let typingTimer = null;
+    // ==========================================
+// 1. KHỞI TẠO CƠ SỞ DỮ LIỆU (INDEXEDDB)
+// 1. Cấu hình Cơ sở dữ liệu (Dùng ID gốc làm khóa chính để CHỐNG TRÙNG)
 
-    // 2. HÀM TẢI DỮ LIỆU (CHỈ CẦN 1 HÀM NÀY)
-    async function initData() {
-        try {
-            // Tải song song 2 file
-            const [res1, res2] = await Promise.all([
-                fetch('kanji_bank_1.json').catch(() => null),
-                fetch('kanji_bank_2.json').catch(() => null),
-                fetch('tuvung.json').catch(() => null)
-            ]);
+const db = new Dexie("SumiAutoDB");
+db.version(2).stores({ // Tăng version lên 2
+    words: "id, *searchTerms",
+    contributions: "++id, wordId, content, timestamp" // Bảng mới lưu góp ý
+});
 
-            let data1 = res1 ? await res1.json() : [];
-            let data2 = res2 ? await res2.json() : [];
+let dictionaryData = []; 
+let typingTimer = null;
 
-            dictionaryData = [...data1, ...data2];
-            console.log("Sumi đã nạp xong: " + dictionaryData.length + " từ vựng.");
-        } catch (error) {
-            console.error("Lỗi nạp dữ liệu:", error);
-        }
+// 2. KHỞI TẠO HỆ THỐNG
+window.addEventListener('load', async () => {
+    if (typeof initCanvas === "function") initCanvas();
+    displayHistory();
+
+    const count = await db.words.count();
+    if (count === 0) {
+        autoLoadData(); 
+    } else {
+        typeText(`Sumi đã sẵn sàng tra cứu ${count.toLocaleString()} từ vựng duy nhất! 🍵`);
     }
+    initKanjiBank();
+});
 
-   
 
-async function processImage(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const overlay = document.getElementById('scanOverlay');
-    overlay.style.display = 'flex';
-    typeText("sumi đang tập trung đọc chữ trên ảnh...");
-
+// 3. NẠP DỮ LIỆU (CHỐNG TRÙNG LẶP TUYỆT ĐỐI)
+async function autoLoadData() {
+    typeText("Sumi đang nạp kho từ điển /dict/dict.json...");
     try {
-        // Tốc độ quét phụ thuộc vào mạng (để tải dữ liệu jpn)
-        const { data: { text } } = await Tesseract.recognize(file, 'jpn+eng', {
-            logger: m => {
-                if (m.status === 'recognizing text') {
-                    // Cập nhật phần trăm tiến độ nếu cậu muốn
-                    console.log("đang quét: " + (m.progress * 100).toFixed(0) + "%");
-                }
-            }
-        });
+        const response = await fetch('dict/dict.json'); 
+        if (!response.ok) throw new Error("Không tìm thấy file");
 
-        // Làm sạch văn bản: xóa khoảng trắng, xuống dòng
-        const cleanText = text.replace(/\s+/g, '').trim();
+        const data = await response.json();
+        const words = data.words || [];
 
-        if (cleanText) {
-            // Chỉ lấy ký tự Kanji/Chữ đầu tiên để tra cứu cho chính xác
-            const searchTarget = cleanText.charAt(0); 
+        // BƯỚC QUAN TRỌNG: Xóa sạch dữ liệu cũ trước khi nạp
+        await db.words.clear();
+
+        const chunkSize = 5000;
+        for (let i = 0; i < words.length; i += chunkSize) {
+            const chunk = words.slice(i, i + chunkSize).map(w => {
+                // Sử dụng Set để lọc trùng từ khóa trong chính mục từ đó
+                const terms = new Set();
+                if (w.kanji) w.kanji.forEach(k => terms.add(k.text.toLowerCase()));
+                if (w.kana) w.kana.forEach(k => terms.add(k.text.toLowerCase()));
+                
+                return {
+                    id: String(w.id), // Khóa chính là ID từ file
+                    kanji: w.kanji || [],
+                    kana: w.kana || [],
+                    sense: w.sense || [],
+                    searchTerms: Array.from(terms) 
+                };
+            });
             
-            document.getElementById('searchInput').value = searchTarget;
-            executeSearch(searchTarget); // Gọi hàm tra cứu có sẵn của cậu
-            typeText("sumi đọc được chữ: " + searchTarget);
-        } else {
-            typeText("hic, ảnh trắng hoặc mờ quá, sumi không thấy chữ nào.");
+            // Dùng bulkPut để nếu trùng ID sẽ ghi đè bản mới nhất, không tạo bản sao
+            await db.words.bulkPut(chunk);
+            
+            const percent = Math.round(((i + chunk.length) / words.length) * 100);
+            document.getElementById('type-text').innerText = `Sumi đang nạp: ${percent}%...`;
         }
-    } catch (error) {
-        console.error(error);
-        typeText("sumi bị mỏi mắt rồi, không quét được. cậu thử lại nhé!");
-    } finally {
-        overlay.style.display = 'none';
-        event.target.value = ''; 
+        typeText("Đã nạp xong! Giờ kết quả sẽ không bị lặp lại nữa đâu.");
+    } catch (err) {
+        typeText("Lỗi: Sumi không thấy file tại thư mục /dict/dict.json.");
     }
 }
 
-function showScanningOverlay() {
-    let overlay = document.getElementById('scanOverlay');
-    if(!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'scanOverlay';
-        overlay.className = 'scanning-overlay';
-        overlay.innerHTML = '<div class="scan-line"></div><p style="margin-top:20px; font-weight:800;">SUMI ĐANG QUÉT ẢNH...</p>';
-        document.body.appendChild(overlay);
+// 4. HÀM TRA CỨU (Lọc trùng kết quả hiển thị bằng Map)
+async function executeSearch(param) {
+    const inputEl = document.getElementById('searchInput');
+    const query = inputEl.value.trim().toLowerCase();
+    const container = document.getElementById('result-container');
+    
+    if (!query) {
+        // Nếu xóa trắng ô tìm kiếm -> Ẩn khung luôn
+        if (container) container.style.display = "none";
+        return;
     }
-    overlay.style.display = 'flex';
-}
 
-function hideScanningOverlay() {
-    const overlay = document.getElementById('scanOverlay');
-    if(overlay) overlay.style.display = 'none';
-}
+    // --- CHỈ LƯU LỊCH SỬ KHI NHẤN ENTER HOẶC CLICK ---
+    // Kiểm tra nếu là sự kiện bàn phím và phím đó là Enter
+    const isEnter = param && param.key === "Enter";
+    // Kiểm tra nếu là hành động Click chuột vào kính lúp
+    const isClick = param === 'click';
 
-function showPopup(data) {
-    document.getElementById('popKanji').innerText = data[0];
-    document.getElementById('popHanViet').innerText = data[1];
+    if (isEnter || isClick) {
+        saveToHistory(query);
+        typeText(`Sumi đã ghi nhớ từ "${query}" vào lịch sử nhé!`);
+    }
+
+    // Vẫn thực hiện tìm kiếm như bình thường
+    const results = await db.words.where('searchTerms').startsWithIgnoreCase(query).limit(50).toArray();
     
-    // Gộp các nghĩa
-    const meanings = data[4] ? data[4].join(", ") : "đang cập nhật";
-    document.getElementById('popMeaning').innerText = meanings.toLowerCase();
+    if (results.length > 0) {
+        // CÓ KẾT QUẢ -> HIỆN KHUNG
+        container.style.display = "block";
+        displayResults(results);
+    } else {
+        // KHÔNG CÓ KẾT QUẢ -> ẨN KHUNG
+        container.style.display = "none";
+        searchKanjiBank(query); // Vẫn cho phép tìm Kanji Bank hiện Popup
+    }
+}
+
+function displayResults(results) {
+    const container = document.getElementById('result-container');
+    if (!container) return;
     
-    // Thông tin thêm (nếu có)
-    const detail = data[5] ? `số nét: ${data[5].Strokes} | bộ: ${data[5].Radical}` : "không có dữ liệu thêm";
-    document.getElementById('popDetail').innerText = detail.toLowerCase();
+    container.style.display = "block"; // Luôn đảm bảo khung được hiện
+    container.innerHTML = "";
+    container.scrollTop = 0;
 
-    document.getElementById('resultPopup').style.display = 'flex';
-}
-
-function closePopup() {
-    document.getElementById('resultPopup').style.display = 'none';
-}
-
-    // 4. HÀM TYPEWRITER (HIỆU ỨNG GÕ CHỮ)
-    function typeText(text) {
-        const el = document.getElementById('type-text');
-        if (!el) return;
-
-        if (typingTimer) clearInterval(typingTimer);
-        el.innerText = ""; 
+    container.innerHTML = results.map(item => {
+        const kanjiText = item.kanji[0]?.text || "";
+        const mainDisplay = kanjiText || item.kana[0]?.text;
         
-        let i = 0;
-        typingTimer = setInterval(() => {
-            if (i < text.length) {
-                el.innerText += text.charAt(i);
-                i++;
-            } else {
-                clearInterval(typingTimer);
-            }
-        }, 30); 
+        // Lấy Hán Việt tối giản
+        const fullHanViet = getHanViet(kanjiText);
+        
+        return `
+        <div class="result-item" onclick="showWordDetail('${item.id}')" style="cursor:pointer; background:white; padding:15px; border-radius:18px; border:1px solid #e8e8e8; margin-bottom:12px; width:100%;">
+            <div style="display: flex; align-items: baseline; gap: 10px;">
+                <div style="color: var(--muji-red); font-weight: 800; font-size: 20px;">
+                    ${mainDisplay}
+                </div>
+                ${fullHanViet ? `<span style="font-size: 13px; color: #999; font-weight: 700; text-transform: uppercase;">[ ${fullHanViet} ]</span>` : ""}
+            </div>
+            <div style="font-size: 12px; color: #888; font-weight:600; margin-top: 4px;">
+                ${item.kana.map(k => k.text).join(", ")}
+            </div>
+            <div style="font-size: 14px; margin-top: 8px; color: #444; line-height:1.5;">
+                ${item.sense[0]?.gloss.map(g => g.text).join("; ")}
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+
+// Hàm hiển thị chi tiết khi Click
+// HÀM HIỂN THỊ CHI TIẾT DUY NHẤT - KHÔNG ĐƯỢC TRÙNG TÊN
+async function showWordDetail(wordId) {
+    try {
+        const word = await db.words.get(String(wordId));
+        if (!word) return;
+
+        // 1. Xử lý Chữ chính (Kanji) và co chữ
+        const kanjiEl = document.getElementById('popKanji');
+        const kanjiText = word.kanji[0]?.text || word.kana[0]?.text || "";
+        kanjiEl.innerText = kanjiText;
+
+        // Thuật toán co chữ trên 1 dòng
+        if (kanjiText.length > 10) kanjiEl.style.fontSize = "22px";
+        else if (kanjiText.length > 7) kanjiEl.style.fontSize = "30px";
+        else if (kanjiText.length > 4) kanjiEl.style.fontSize = "42px";
+        else kanjiEl.style.fontSize = "60px";
+
+        // 2. TÁCH DÒNG: Hiragana và Hán Việt
+        // Dòng Hiragana
+        const kanaText = word.kana.map(k => k.text).join(" / ");
+        document.getElementById('popKana').innerText = kanaText;
+
+        // Dòng Hán Việt (Lấy toàn bộ các chữ)
+        let fullHanViet = "";
+        if (kanjiText) {
+            fullHanViet = kanjiText.split('').map(char => getHanViet(char)).filter(v => v).join(' ');
+        }
+        
+        const hvEl = document.getElementById('popHanViet');
+        if (fullHanViet) {
+            hvEl.innerText = fullHanViet;
+            hvEl.style.display = "block"; // Hiện nếu có Hán Việt
+        } else {
+            hvEl.style.display = "none";  // Ẩn nếu từ thuần Hiragana
+        }
+
+        // 3. Xử lý Nghĩa và Loại từ
+        const allMeans = word.sense.map(s => s.gloss.map(g => g.text).join(", ")).join(" | ");
+        document.getElementById('popMeaning').innerText = allMeans;
+        
+        const pos = word.sense[0]?.partOfSpeech.join(", ") || "n";
+        document.getElementById('popDetail').innerText = "Loại từ: " + pos;
+
+        // 4. Hiển thị Popup
+        document.getElementById('resultPopup').style.display = 'flex';
+        typeText(`Chi tiết từ: ${kanjiText}`);
+
+    } catch (err) {
+        console.error("Lỗi popup:", err);
     }
-// Hàm lưu từ khóa vào bộ nhớ máy
+}
+
+// Gắn sự kiện Input
+document.getElementById('searchInput').oninput = () => {
+    if (typingTimer) clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => executeSearch(), 300);
+};
+
+
+async function initKanjiBank() {
+    try {
+        // Thông báo cho người dùng biết Sumi đang nạp dữ liệu Hán Việt
+        console.log("Sumi đang kết nối với kho Hán Việt...");
+        
+        const res = await fetch('kanji_bank.json');
+        if (res.ok) {
+            dictionaryData = await res.json();
+            console.log("Nạp Kanji Bank thành công!");
+            // Bạn có thể cho Sumi thông báo nhẹ một câu
+            if (typeof typeText === "function") {
+                typeText("Sumi đã sẵn sàng tra cứu từ vựng kèm Hán Việt rồi nhé! 🌸");
+            }
+        } else {
+            throw new Error("Không thể tải file kanji_bank.json");
+        }
+    } catch (e) {
+        console.error("Lỗi nạp Kanji Bank:", e);
+    }
+}
+// ==========================================
+// 5. CÁC HÀM TIỆN ÍCH KHÁC
+// ==========================================
+function getHanViet(text) {
+    if (!text || !dictionaryData || dictionaryData.length === 0) return "";
+    
+    const chars = text.split('');
+    const hvResults = chars.map(char => {
+        // Chỉ xử lý nếu là chữ Hán
+        if (!/[\u4e00-\u9faf]/.test(char)) return ""; 
+
+        const entry = dictionaryData.find(item => {
+            if (Array.isArray(item)) return item[0] === char;
+            return item.kanji === char;
+        });
+        
+        if (entry) {
+            let rawHv = Array.isArray(entry) ? entry[1] : entry.hanviet;
+            // Nếu có nhiều âm (cách nhau bởi dấu phẩy hoặc khoảng trắng), chỉ lấy từ đầu tiên
+            return rawHv.split(/[\s,]+/)[0]; 
+        }
+        return "";
+    });
+
+    // Gộp lại thành chuỗi, viết hoa toàn bộ
+    return hvResults.filter(v => v !== "").join(' ').toUpperCase();
+}
+
+let typingInterval = null; // Biến dùng để quản lý luồng gõ chữ
+
+function typeText(text) {
+    const el = document.getElementById('type-text');
+    if (!el) return;
+
+    // 1. DỪNG NGAY luồng gõ cũ nếu đang chạy
+    if (typingInterval) {
+        clearInterval(typingInterval);
+        typingInterval = null;
+    }
+
+    // 2. Xóa sạch chữ cũ trong bong bóng
+    el.innerText = ""; 
+    
+    let i = 0;
+    // 3. Bắt đầu luồng gõ chữ mới
+    typingInterval = setInterval(() => {
+        if (i < text.length) {
+            el.innerText += text.charAt(i);
+            i++;
+        } else {
+            // Xong thì dọn dẹp
+            clearInterval(typingInterval);
+            typingInterval = null;
+        }
+    }, 30); // Tốc độ gõ 30ms mỗi chữ
+}
+
+
+
 function saveToHistory(query) {
     let history = JSON.parse(localStorage.getItem('sumi_history')) || [];
-    
-    // Loại bỏ nếu từ này đã tồn tại (để đưa nó lên đầu)
     history = history.filter(item => item !== query);
-    
-    // Thêm từ mới vào đầu danh sách
     history.unshift(query);
-    
-    // Chỉ giữ lại tối đa 10 từ gần nhất
     if (history.length > 10) history.pop();
-    
     localStorage.setItem('sumi_history', JSON.stringify(history));
     displayHistory();
 }
 
-// Hàm hiển thị lịch sử ra màn hình
 function displayHistory() {
     const historyList = document.getElementById('historyList');
     const historyWrapper = document.getElementById('historyWrapper');
     const history = JSON.parse(localStorage.getItem('sumi_history')) || [];
+    if (!historyWrapper) return;
 
     if (history.length === 0) {
         historyWrapper.style.display = 'none';
         return;
     }
-
     historyWrapper.style.display = 'block';
-    historyList.innerHTML = '';
-
-    history.forEach(query => {
-        const span = document.createElement('span');
-        span.className = 'history-item';
-        span.innerText = query;
-        // KHI NHẤN VÀO TỪ TRONG LỊCH SỬ
-        span.onclick = () => {
-            document.getElementById('searchInput').value = query; // Đưa từ đó lên ô nhập
-            executeSearch(query); // Gọi hàm tra cứu ngay lập tức với từ khóa này
-        };
-        
-        historyList.appendChild(span);
-    });
+    historyList.innerHTML = history.map(q => 
+        `<span class="history-item" onclick="document.getElementById('searchInput').value='${q}'; executeSearch()">${q}</span>`
+    ).join('');
 }
 
-// Hàm xóa toàn bộ lịch sử
 function clearHistory() {
     localStorage.removeItem('sumi_history');
     displayHistory();
-    typeText("đã xóa sạch dấu vết tìm kiếm rồi nhé!");
+    typeText("Đã xóa sạch dấu vết tìm kiếm rồi nhé!");
 }
 
-// CẬP NHẬT TRONG HÀM executeSearch CỦA CẬU
-function executeSearch(param) {
-    let query = "";
-
-    // 1. Nếu nhấn Enter (truyền vào event)
-    if (param && param.key === "Enter") {
-        query = document.getElementById('searchInput').value.trim().toLowerCase();
-    } 
-    // 2. Nếu nhấn vào từ trong Lịch sử (truyền vào string)
-    else if (typeof param === "string" && param !== 'click') {
-        query = param.trim().toLowerCase();
-        document.getElementById('searchInput').value = query; // Cập nhật lại ô nhập cho khớp
-    }
-    // 3. Nếu nhấn chuột vào kính lúp (truyền vào 'click')
-    else {
-        query = document.getElementById('searchInput').value.trim().toLowerCase();
-    }
-
-    if (!query) return;
-
-    // Lưu lịch sử và cập nhật giao diện lịch sử
-    saveToHistory(query);
-
-    typeText("đợi sumi một xíu, đang tìm từ '" + query + "'...");
-
-    // Tìm kiếm trong bộ dữ liệu dictionaryData
-    const result = dictionaryData.find(item => {
-        if (Array.isArray(item)) {
-            // Dữ liệu kiểu mảng (kanji_bank)
-            return (item[0] === query) || (item[1] && item[1].toLowerCase() === query);
-        } else {
-            // Dữ liệu kiểu object (tuvung.json)
-            return (item.kanji === query) || (item.hanviet && item.hanviet.toLowerCase() === query);
-        }
-    });
-
-    setTimeout(() => {
-        if (result) {
-            showPopup(result); // Hiện Popup kết quả (Hàm showPopup của cậu)
-            typeText("xong rồi nè! sumi đã tìm thấy.");
-        } else {
-            typeText("sumi không thấy từ '" + query + "' trong kho dữ liệu rồi.");
-        }
-    }, 400);
+function showPopup(data) {
+    document.getElementById('popKanji').innerText = data[0];
+    document.getElementById('popHanViet').innerText = data[1];
+    const meanings = data[4] ? data[4].join(", ") : "đang cập nhật";
+    document.getElementById('popMeaning').innerText = meanings.toLowerCase();
+    const detail = data[5] ? `Số nét: ${data[5].Strokes} | Bộ: ${data[5].Radical}` : "N/A";
+    document.getElementById('popDetail').innerText = detail.toLowerCase();
+    document.getElementById('resultPopup').style.display = 'flex';
 }
 
+function closePopup() { document.getElementById('resultPopup').style.display = 'none'; }
 
-    // 5. HÀM ĐIỀU KHIỂN CHAT SUPPORT (Cố định lỗi toggle)
-    function toggleSupport() {
-        const chatWin = document.getElementById('chatWindow');
-        const bubble = document.getElementById('support-msg');
-        if(!chatWin) return;
-
-        chatWin.classList.toggle('active');
-        bubble.style.opacity = chatWin.classList.contains('active') ? "0" : "1";
-    }
-
-    function handleChat(e) {
-        if (e.key === 'Enter') sendChat();
-    }
-
-    
-
-// Mở khung vẽ khi nhấn nút
-function openHandwriting() {
-    document.getElementById('handwritingOverlay').style.display = 'flex';
-    typeText("cậu hãy vẽ thật nắn nót nhé, sumi đang đợi...");
+function toggleSupport() {
+    document.getElementById('chatWindow').classList.toggle('active');
+    const bubble = document.getElementById('support-msg');
+    if (bubble) bubble.style.opacity = document.getElementById('chatWindow').classList.contains('active') ? "0" : "1";
 }
 
-async function recognizeHandwriting() {
-    typeText("để sumi xem chữ này là gì nào...");
-    
-    // Chuyển hình vẽ trên canvas thành ảnh
-    const dataURL = canvas.toDataURL('image/png');
-
+// Xử lý ảnh và Viết tay
+async function processImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    showScanningOverlay();
     try {
-        // Sử dụng Tesseract đã nạp ở bước trước
-        const { data: { text } } = await Tesseract.recognize(dataURL, 'jpn');
-        const cleanText = text.replace(/\s+/g, '').trim();
-
+        const { data: { text } } = await Tesseract.recognize(file, 'jpn+eng');
+        const cleanText = text.replace(/\s+/g, '').trim().charAt(0);
         if (cleanText) {
-            const finalChar = cleanText.charAt(0); // Lấy chữ đầu tiên đoán được
-            document.getElementById('searchInput').value = finalChar;
-            executeSearch(finalChar);
-            closeHandwriting();
-        } else {
-            typeText("hic, sumi không nhìn ra chữ này. cậu vẽ lại rõ hơn nhé!");
+            document.getElementById('searchInput').value = cleanText;
+            executeSearch();
         }
-    } catch (e) {
-        typeText("lỗi nhận diện rồi cậu ơi.");
-    }
+    } catch (e) { console.error(e); }
+    finally { hideScanningOverlay(); }
 }
 
-    function sendChat() {
-        const input = document.getElementById('chatInput');
-        const body = document.getElementById('chatBody');
-        const text = input.value.trim();
-        if (!text) return;
+function showScanningOverlay() { document.getElementById('scanOverlay').style.display = 'flex'; }
+function hideScanningOverlay() { document.getElementById('scanOverlay').style.display = 'none'; }
 
-        const userDiv = document.createElement('div');
-        userDiv.className = 'msg-user';
-        userDiv.innerText = text;
-        body.appendChild(userDiv);
-        input.value = "";
-
-        setTimeout(() => {
-            const botDiv = document.createElement('div');
-            botDiv.className = 'msg-bot';
-            botDiv.innerText = "Sumi đang ghi nhận: '" + text + "'. Chờ xíu nhé!";
-            body.appendChild(botDiv);
-            body.scrollTop = body.scrollHeight;
-        }, 700);
-    }
-
-    
-// --- ĐOẠN WINDOW.ONLOAD TỔNG HỢP DUY NHẤT ---
-window.onload = () => {
-    // 1. Nạp dữ liệu từ điển (phải nạp xong mới tìm kiếm được)
-    if (typeof initData === "function") {
-        initData();
-    } else if (typeof loadAllData === "function") {
-        // Phòng hờ nếu cậu đổi tên hàm nạp dữ liệu
-        loadAllData();
-    }
-
-    // 2. Khởi tạo bảng vẽ viết tay
-    if (typeof initCanvas === "function") {
-        initCanvas();
-    }
-
-    // 3. Hiển thị lịch sử tìm kiếm ngay lập tức
-    if (typeof displayHistory === "function") {
-        displayHistory();
-    }
-
-    // 4. Cho Sumi chào khách
-    if (typeof typeText === "function") {
-        typeText("Chào cậu! Sumi đã nạp xong kho từ vựng và sẵn sàng rồi nè. 🍵");
-    }
-};
+function openHandwriting() { document.getElementById('handwritingOverlay').style.display = 'flex'; }
+function closeHandwriting() { document.getElementById('handwritingOverlay').style.display = 'none'; }
 </script>
 <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="processImage(event)">
 
