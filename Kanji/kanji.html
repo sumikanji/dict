@@ -300,7 +300,25 @@
     from { transform: translateY(100%); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
+/* Nút đóng Card trên điện thoại */
+.mobile-close-btn {
+    display: none; /* Mặc định ẩn trên máy tính */
+}
 
+@media (max-width: 600px) {
+    .mobile-close-btn {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background: #eee;
+        border: none;
+        border-radius: 12px;
+        font-weight: bold;
+        color: #666;
+        margin-bottom: 20px;
+        cursor: pointer;
+    }
+}
 /* Hiệu ứng nhẹ khi di chuột vào ô (tùy chọn) */
 .reading-grid div:hover {
     border-color: #d0d0d0;
@@ -712,6 +730,10 @@ function showBoThuDetails(item) {
         };
         grid.appendChild(cell);
     });
+}
+// Hàm đóng Card trên Mobile
+function closePreview() {
+    document.querySelector('.right-side').classList.remove('active');
 }
 
        // Hàm hiển thị chi tiết chữ Kanji (N1-N5)
