@@ -45,7 +45,7 @@
         "STT": 8,
         "BO": "亠",
         "TEN BO": "Đầu",
-        "NGHIA": "Chưa có nghĩa"
+        "NGHIA": ""
     },
     {
         "STT": 9,
@@ -207,7 +207,7 @@
         "STT": 35,
         "BO": "夊",
         "TEN BO": "Truy",
-        "NGHIA": "Đia chậm"
+        "NGHIA": "Đi chậm"
     },
     {
         "STT": 36,
@@ -374,7 +374,7 @@
     {
         "STT": 63,
         "BO": "戶",
-        "TEN BO": "Hộ 6",
+        "TEN BO": "Hộ ",
         "NGHIA": "Cửa một cánh"
     },
     {
@@ -399,12 +399,12 @@
         "STT": 67,
         "BO": "文",
         "TEN BO": "Văn",
-        "NGHIA": "Văn vẻ, văn chương, vẻ sang"
+        "NGHIA": "Văn vẻ, văn chương"
     },
     {
         "STT": 68,
         "BO": "斗",
-        "TEN BO": "Đầu 7",
+        "TEN BO": "Đấu ",
         "NGHIA": "Cái đấu để đong"
     },
     {
@@ -416,7 +416,7 @@
     {
         "STT": 70,
         "BO": "方",
-        "TEN BO": "Phương 9",
+        "TEN BO": "Phương ",
         "NGHIA": "Vuông"
     },
     {
@@ -459,7 +459,7 @@
         "STT": 77,
         "BO": "止",
         "TEN BO": "Chỉ",
-        "NGHIA": "Dừng lai"
+        "NGHIA": "Dừng lại "
     },
     {
         "STT": 78,
@@ -597,7 +597,7 @@
         "STT": 100,
         "BO": "生",
         "TEN BO": "Sinh",
-        "NGHIA": "Sinh đẻ, sinh sốn"
+        "NGHIA": "Sinh đẻ"
     },
     {
         "STT": 101,
@@ -681,7 +681,7 @@
         "STT": 114,
         "BO": "禸",
         "TEN BO": "Nhựu",
-        "NGHIA": "Vất chân, lốt chân"
+        "NGHIA": "Vết chân, lốt chân"
     },
     {
         "STT": 115,
@@ -789,7 +789,7 @@
         "STT": 132,
         "BO": "自",
         "TEN BO": "Tự",
-        "NGHIA": "Tự bản thân, kể từ"
+        "NGHIA": "Tự bản thân"
     },
     {
         "STT": 133,
@@ -825,13 +825,13 @@
         "STT": 138,
         "BO": "艮",
         "TEN BO": "Cấn",
-        "NGHIA": "Quẻ Cấn (kinh dịch), dừng, bền"
+        "NGHIA": "Quẻ Cấn, dừng, bền"
     },
     {
         "STT": 139,
         "BO": "色",
         "TEN BO": "Sắc",
-        "NGHIA": "Màu, dáng vẻ, nữ sắc"
+        "NGHIA": "Màu, dáng vẻ"
     },
     {
         "STT": 140,
@@ -963,7 +963,7 @@
         "STT": 161,
         "BO": "辰",
         "TEN BO": "Thần",
-        "NGHIA": "Nhật, nguyệt, tinh, thin (12chi)"
+        "NGHIA": "Nhật, nguyệt, tinh"
     },
     {
         "STT": 162,
@@ -1077,11 +1077,11 @@
         "STT": 180,
         "BO": "音",
         "TEN BO": "Âm",
-        "NGHIA": "Âm thanh,, tiếng"
+        "NGHIA": "Âm thanh, tiếng"
     },
     {
         "STT": 181,
-        "BO": "♛,页",
+        "BO": "頁,页",
         "TEN BO": "Hiệt",
         "NGHIA": "Đầu, trang giấy"
     },
