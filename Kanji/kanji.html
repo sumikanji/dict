@@ -297,24 +297,26 @@ body {
             border-bottom: 1px solid #eee;
         }
 
-      /* ĐIỀU CHỈNH RIÊNG CHO MOBILE (IPHONE) */
-@media (max-width: 600px) {
-    .main-layout {
-        flex-direction: column; /* Mobile xếp chồng lên nhau */
-    }
-    
-    .master-box {
-        width: 100%;
-        height: 65svh; /* Ngắn lại để iPhone dễ nhìn */
+      @media (max-width: 600px) {
+    /* Mặc định ẩn khung bên phải trên mobile */
+    .right-side { 
+        display: none; 
     }
 
+    /* Khi có class active thì hiện toàn màn hình */
     .right-side.active {
-        position: fixed; /* Hiện đè lên toàn màn hình trên Mobile */
-        top: 0; left: 0;
-        width: 100vw; height: 100svh;
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 10000; /* Đảm bảo đè lên mọi thứ khác */
         background: var(--muji-bg);
         padding: 20px;
-        z-index: 9999;
+        flex-direction: column;
+        overflow-y: auto;
+        animation: slideUp 0.3s ease-out;
     }
     
 
