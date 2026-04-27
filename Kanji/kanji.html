@@ -185,11 +185,11 @@ body {
     margin-top: 20px;
 }
 
-/* Lưới Kanji bên trong Master Box */
-.kanji-grid { 
-    display: grid; 
-    /* PC: Tự động chia cột (tối thiểu 150px mỗi ô) */
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+/* KANJI GRID: Chia 3 cột đều tăm tắp */
+.kanji-grid {
+    display: grid;
+    /* Mặc định cho PC: 4-5 cột */
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 15px;
     padding: 15px;
 }
@@ -313,11 +313,27 @@ body {
             border-bottom: 1px solid #eee;
         }
 
-      @media (max-width: 600px) {
-    /* Mặc định ẩn khung bên phải trên mobile */
-    .right-side { 
-        display: none; 
+     /* --- ĐIỀU CHỈNH RIÊNG CHO IPHONE (THEO ẢNH MẪU) --- */
+@media (max-width: 600px) {
+    .kanji-grid {
+        /* ÉP CỐ ĐỊNH 3 CỘT TRÊN MỘT HÀNG */
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 10px;
+        padding: 10px;
     }
+
+    .kanji-char {
+        font-size: 32px !important; /* Chỉnh lại một chút cho vừa ô vuông nhỏ */
+    }
+
+    .hv-label {
+        font-size: 10px !important;
+    }
+
+    .kanji-cell {
+        border-radius: 15px; /* Mobile bo góc nhỏ hơn chút cho cân đối */
+    }
+
 
     /* Khi có class active thì hiện toàn màn hình */
     .right-side.active {
@@ -353,24 +369,19 @@ body {
     }
 }
 /* 1. THANH BANNER MÀU TRẮNG TINH */
-/* 1. THANH BANNER: Bỏ margin âm để không tràn khỏi Master Box */
+/* SEARCH BANNER: Nằm gọn trong Master Box */
 .kanji-control-banner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     position: sticky;
     top: 0;
-    z-index: 100;
-    
+    z-index: 1000;
     background: #ffffff !important;
-    /* Loại bỏ margin âm gây tràn */
-    margin: 0; 
-    /* Bo góc khớp với Master Box */
-    border-radius: 25px 25px 0 0; 
-    padding: 15px; 
-    border-bottom: 1px solid #eeeeee;
-    gap: 15px;
-    width: 100%; /* Đảm bảo luôn bằng chiều rộng Master Box */
+    padding: 15px;
+    margin: 0;
+    border-bottom: 1px solid #eee;
+    width: 100%;
+    display: flex;
+    flex-direction: column; /* Trên iPhone nên để dọc cho thoáng */
+    gap: 10px;
 }
 
 /* 2. KHUNG SEARCH: Dùng flex để tự co lại */
