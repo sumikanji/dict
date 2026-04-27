@@ -27,36 +27,58 @@ body {
     padding: 20px 20px 20px 20px; /* Ép cách mép trên trình duyệt 40px */
     color: var(--muji-text);
 }
-
+/* Khung vẽ Kanji với bóng đổ Inside cực nhẹ 4 bên */
+#writer-canvas {
+    width: 160px;
+    height: 160px;
+    background-color: #ffffff !important;
+    border-radius: 20px;
+    margin-bottom: 15px;
+    
+    /* Viền ngoài mảnh để làm ranh giới cho bóng đổ bên trong */
+    border: 1px solid #f0f0f0; 
+    
+    /* Hiệu ứng bóng đổ Inside (nhẹ nhàng, không lệch hướng) */
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.05);
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
        /* --- LAYOUT CHIA CỘT --- */
-/* 1. Đảm bảo layout chính không bị tràn ngang trên iPhone */
+/* --- LAYOUT CHIA CỘT TỐI ƯU --- */
 .main-layout {
     display: flex;
     align-items: flex-start;
-    gap: 30px;
-    width: 100%; /* Đổi từ 95% thành 100% để linh hoạt hơn */
-    max-width: 1300px;
+    gap: 20px;
+    width: 100%;
+    max-width: 1400px;
     margin: 20px auto;
-    padding: 0 15px; /* Thêm padding để không bị dính sát mép trái phải */
+    padding: 0 10px; /* Padding nhỏ để không dính sát mép iPhone */
+    flex-wrap: wrap; /* RẤT QUAN TRỌNG: Cho phép rớt dòng trên Mobile */
 }
 
-/* Cột bên trái: Không dùng sticky ở đây nữa */
 .left-side {
-    flex: 2;
+    flex: 1.5;
+    min-width: 300px; /* Đảm bảo cột trái không bị bóp quá nhỏ */
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 15px;
-    /* Bỏ position: sticky và top: 20px cũ nếu có */
 }
 
-/* Cột bên phải */
 .right-side {
     flex: 0.8;
-    position: sticky; /* Ghim cả cột phải */
-    top: 20px;       /* Cách mép trên 20px giống bên trái */
-    display: flex;
+    min-width: 300px; /* Đảm bảo cột phải đủ chỗ hiển thị */
+    width: 100%;
+    position: sticky;
+    top: 20px;
+    
     flex-direction: column;
     gap: 15px;
+    z-index: 1000;
 }
 
         /* --- BOT AREA --- */
@@ -145,24 +167,18 @@ body {
     padding-bottom: 10px;
       /* 2. Giới hạn chiều cao của khung chứa Kanji và cho phép cuộn */
 /* MASTER BOX: Dừng lại cách mép trên 40px */
+/* MASTER BOX: Fix lỗi chiều cao và tràn */
 .master-box {
     background: #f7f7f7;
     border: 1px solid var(--gray-border);
     border-radius: 25px;
-    padding: 0 20px 20px 20px;
-    flex: 1;
-    transition: all 0.4s ease;
-    position: sticky;
-    top: 40px; /* Cùng giá trị với padding-top của body */
-    z-index: 500;
-/* SỬA LỖI IPHONE TẠI ĐÂY */
-    width: 100%;       /* Tự động co lại theo cột cha */
-    height: 80svh;     /* Dùng svh để luôn vừa khít màn hình iPhone mà không bị mất chân */
-    max-height: 800px; /* Giới hạn chiều cao tối đa cho máy tính */
-    
+    padding: 0 15px 15px 15px;
+    width: 100%;
+    height: 70svh; /* svh giúp iPhone không bị tràn qua thanh địa chỉ */
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch; /* Giúp cuộn mượt hơn trên iPhone */
-    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch; /* Cuộn mượt trên Safari */
+    position: sticky;
+    top: 20px;
 }
    
 
@@ -817,14 +833,19 @@ function showBoThuDetails(item) {
         };
     }
     
-    // 4. VẼ ANIMATION CHO CHỮ ĐẦU TIÊN
-    document.getElementById('writer-canvas').innerHTML = '';
-    if (firstChar) {
-        HanziWriter.create('writer-canvas', firstChar, { 
-            width: 160, height: 160, strokeColor: '#a63d40' 
-        }).animateCharacter();
+   // Tìm đến dòng HanziWriter.create và cập nhật options
+HanziWriter.create('writer-canvas', item.c, {
+    width: 160,
+    height: 160,
+    strokeColor: '#a63d40',
+    showOutline: true,       // Hiện nét mờ hướng dẫn
+    showCharacter: false,
+    padding: 15,             // Khoảng cách với viền khung
+    // Tùy chọn thêm đường kẻ chéo (nếu thích)
+    radicalColor: '#333' 
+}).animateCharacter();
     }
-}
+
 
         // 1. DỮ LIỆU
         async function loadData() {
@@ -930,7 +951,11 @@ function filterKanjiInGrid() {
 function showDetails(item) {
     typeText(`Cậu đang xem chi tiết chữ "${item.c}". Hãy nhìn cách viết ở trong khung nhé!`);
     window.currentSelectedKanji = item.c;
-    
+    // 2. Hiện lại hàng Số nét & Bộ thủ (đã bị ẩn bởi showBoThuDetails)
+    const strokesRadicalRow = document.getElementById('strokes-val').parentElement.parentElement;
+    if (strokesRadicalRow) {
+        strokesRadicalRow.style.display = 'flex'; // Hiện lại hàng ngang
+    }
     // Đổ dữ liệu cơ bản
     document.getElementById('hv-val').textContent = item.hv || "---";
     document.getElementById('mean-val').textContent = item.m || "";
