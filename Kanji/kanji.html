@@ -181,13 +181,16 @@ body {
     margin-top: 20px;
 }
 
-/* KANJI GRID: Chia 3 cột đều tăm tắp */
+/* --- CHO PC (MẶC ĐỊNH) --- */
 .kanji-grid {
     display: grid;
-    /* Mặc định cho PC: 4-5 cột */
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    /* KHÔNG DÙNG repeat(3, 1fr) ở đây */
+    /* Dùng auto-fill để PC tự dãn: Càng rộng càng nhiều cột */
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important; 
     gap: 15px;
-    padding: 15px;
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
 }
    
 
@@ -1297,27 +1300,43 @@ function showDetails(item) {
     const cells = document.querySelectorAll('.kanji-cell');
     if (cells.length === 0) return;
 
-    // Kiểm tra xem có phải tất cả các ô hiện tại đều đã được chọn hay chưa
+    // Kiểm tra xem tất cả các ô đang hiển thị đã được chọn chưa
     const allSelected = Array.from(cells).every(c => c.classList.contains('selected'));
 
     if (allSelected) {
-        // TRƯỜNG HỢP 1: BỎ CHỌN TẤT CẢ
+        // TRƯỜNG HỢP 1: Nếu đã chọn hết rồi -> BỎ CHỌN TẤT CẢ
         cells.forEach(c => {
             c.classList.remove('selected');
-            const char = c.innerText;
+            const char = c.querySelector('.kanji-char').innerText; // Lấy đúng thẻ chứa Kanji
             selectedKanjiData = selectedKanjiData.filter(s => s.c !== char);
         });
-        typeText("Đã bỏ chọn toàn bộ danh sách này.");
+        typeText("Sumi đã bỏ chọn toàn bộ danh sách này rồi nhé! 🍵");
     } else {
-        // TRƯỜNG HỢP 2: CHỌN TẤT CẢ (Chưa chọn hết thì chọn cho hết)
+        // TRƯỜNG HỢP 2: CHỌN TẤT CẢ
         cells.forEach(c => {
             if (!c.classList.contains('selected')) {
-                // Giả lập cú nhấp chuột để kích hoạt logic lưu dữ liệu đã viết ở hàm render
-                c.click(); 
+                c.classList.add('selected');
+                
+                // Lấy dữ liệu chuẩn từ ô
+                const char = c.querySelector('.kanji-char').innerText;
+                const hv = c.querySelector('.hv-label').innerText;
+                
+                // Đẩy vào mảng dữ liệu (tránh trùng lặp)
+                if (!selectedKanjiData.some(s => s.c === char)) {
+                    selectedKanjiData.push({
+                        c: char,
+                        hv: hv,
+                        // Các thông tin khác có thể bổ sung sau khi nhấn vào chi tiết
+                        m: "", on: "", kun: "", v: []
+                    });
+                }
             }
         });
-        typeText(`Đã chọn tất cả ${cells.length} mục trong danh sách!`);
+        typeText(`Tuyệt vời! Sumi đã chọn giúp cậu ${cells.length} chữ rồi đó! 🌸`);
     }
+    
+    // Cập nhật số lượng hiển thị trên nút Flashcard nếu cần
+    console.log("Danh sách đã chọn:", selectedKanjiData);
 }
 
         window.onload = loadData;
