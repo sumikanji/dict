@@ -17,20 +17,69 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Be Vietnam Pro', sans-serif;
-            background-color: var(--muji-bg);
-            display: flex; flex-direction: column; align-items: center;
-            padding: 20px; color: var(--muji-text);
-        }
+       /* --- CẤU TRÚC LAYOUT MỚI --- */
+body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background-color: var(--muji-bg);
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
+    padding: 20px 20px 20px 20px; /* Ép cách mép trên trình duyệt 40px */
+    color: var(--muji-text);
+}
+/* Khung vẽ Kanji với bóng đổ Inside cực nhẹ 4 bên */
+#writer-canvas {
+    width: 160px;
+    height: 160px;
+    background-color: #ffffff !important;
+    border-radius: 20px;
+    margin-bottom: 15px;
+    
+    /* Viền ngoài mảnh để làm ranh giới cho bóng đổ bên trong */
+    border: 1px solid #f0f0f0; 
+    
+    /* Hiệu ứng bóng đổ Inside (nhẹ nhàng, không lệch hướng) */
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.05);
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+       /* --- LAYOUT CHIA CỘT --- */
+/* --- LAYOUT CHIA CỘT TỐI ƯU --- */
+.main-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    width: 100%;
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 0 10px; /* Padding nhỏ để không dính sát mép iPhone */
+    flex-wrap: wrap; /* RẤT QUAN TRỌNG: Cho phép rớt dòng trên Mobile */
+}
 
-        /* --- LAYOUT CHIA CỘT --- */
-        .main-layout {
-            display: flex; gap: 30px; width: 100%; max-width: 1100px;
-            margin-top: 20px; align-items: flex-start;
-        }
-        .left-side { flex: 1.5; display: flex; flex-direction: column; gap: 15px; }
-        .right-side { flex: 1; display: flex; flex-direction: column; gap: 15px; position: sticky; top: 20px; }
+.left-side {
+    flex: 1.5;
+    min-width: 300px; /* Đảm bảo cột trái không bị bóp quá nhỏ */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.right-side {
+    flex: 0.8;
+    min-width: 300px; /* Đảm bảo cột phải đủ chỗ hiển thị */
+    width: 100%;
+    position: sticky;
+    top: 20px;
+    
+    flex-direction: column;
+    gap: 15px;
+    z-index: 1000;
+}
 
         /* --- BOT AREA --- */
         .bot-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; min-height: 180px; justify-content: flex-end; }
@@ -89,7 +138,7 @@
     box-shadow: 0 4px 12px rgba(166, 61, 64, 0.2); /* Thêm bóng đổ cho nút đang chọn */
 }
         /* --- COMPONENTS --- */
-        .level-card { width: 100%; background: white; padding: 15px; border-radius: 20px; border: 1px solid var(--gray-border); text-align: center; }
+       .level-card { width: 100%; background: white; padding: 15px; border-radius: 20px; border: 1px solid var(--gray-border); text-align: center; }
         .l-btn { background: var(--gray-cell); border: 1px solid var(--gray-border); width: 45px; height: 45px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
         .l-btn.active { background: var(--muji-red); color: white; }
 
@@ -117,98 +166,106 @@
     align-items: center;
     padding-bottom: 10px;
       /* 2. Giới hạn chiều cao của khung chứa Kanji và cho phép cuộn */
+/* --- CHỈ SỬA KHUNG MASTER BOX --- */
+
 .master-box {
-    background: white;
+    background: #f7f7f7;
     border: 1px solid var(--gray-border);
     border-radius: 25px;
-    padding: 20px;
+    width: 100%;
     
-    /* Thiết lập chiều cao tối đa (ví dụ 500px hoặc theo màn hình) */
-    max-height: 65vh; 
-    overflow-y: auto; /* Hiện thanh cuộn khi vượt quá chiều cao */
+    /* KHÔNG CUỘN NỘI BỘ: Dãn dài tự nhiên theo số lượng Kanji */
+    height: auto !important; 
+    max-height: none !important;
+    overflow: visible !important; 
     
-    /* Làm đẹp thanh cuộn theo phong cách tối giản */
-    scrollbar-width: thin;
-    scrollbar-color: var(--muji-red) transparent;
+    /* TRÀN VIỀN: Bỏ padding để Grid bám sát mép */
+    padding: 0; 
+    position: relative;
+    margin-top: 20px;
 }
 
-/* Tùy chỉnh thanh cuộn cho Chrome/Safari */
+/* KANJI GRID: Chia 3 cột đều tăm tắp */
+.kanji-grid {
+    display: grid;
+    /* Mặc định cho PC: 4-5 cột */
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+    padding: 15px;
+}
+   
+
+/* Ẩn thanh cuộn cho Chrome, Safari và Edge mới */
 .master-box::-webkit-scrollbar {
-    width: 6px;
-}
-.master-box::-webkit-scrollbar-thumb {
-    background-color: var(--muji-red);
-    border-radius: 10px;
+    display: none;
 }
 }
-        .kanji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(55px, 1fr)); gap: 12px; }
-        /* Ô chứa chữ */
+
+
+/* Biến ô thành hình chữ nhật */
 .kanji-cell {
-    aspect-ratio: 1/1; 
-    background: var(--gray-cell); 
-    border-radius: 12px;
+    width: 100%;
+    height: 120px; /* Chiều cao thấp hơn chiều rộng để tạo hình chữ nhật ngang */
+    background: #ffffff; 
+    border-radius: 18px; 
     display: flex; 
-    flex-direction: column; /* Xếp theo chiều dọc */
+    flex-direction: column;
     align-items: center; 
     justify-content: center; 
     cursor: pointer;
-    transition: 0.3s; 
-    border: 2px solid transparent;
-    padding: 2px;
+    transition: all 0.2s ease;
+    border: 1px solid #efefef;
+    padding: 10px;
+    gap: 8px !important; /* Khoảng cách giữa Kanji và Hán Việt */
 }
 
-/* Chữ Kanji/Bộ thủ chính */
+/* Phóng to mặt chữ Kanji chính - Giúp nhìn rõ từng nét */
 .kanji-char {
     font-family: var(--current-font);
-    font-size: 24px; /* Chỉnh lại kích cỡ vừa vặn */
-    line-height: 1.2;
-}
-/* Danh sách Kanji có cùng bộ thủ (hiển thị trong bảng chi tiết bên phải) */
-.related-kanji-container {
-    margin-top: 15px;
-    padding-top: 10px;
-    border-top: 1px solid #f0f0f0;
-    text-align: left;
+    font-size: 38px; /* Tăng từ 48px lên 52px hoặc 55px nếu muốn to hẳn */
+    line-height: 1;
+    margin-bottom: 12px; /* Giảm margin để nhường chỗ cho Hán Việt */
+    color: var(--muji-text);
+    transition: transform 0.2s ease;
 }
 
-.related-title {
-    font-family: 'Inter', sans-serif;
-    font-size: 10px;
-    font-weight: 300;
-    color: #999;
+/* Phóng to âm Hán Việt - Đậm và rõ nét hơn */
+.hv-label {
+    font-size: 14px; /* Tăng từ 11px/13px lên 14px */
+    font-weight: 800; /* Làm đậm hơn để dễ đọc */
+    color: #888;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    margin-top: 0;
+    white-space: nowrap;
 }
 
-.related-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+/* Hiệu ứng khi di chuột: Chữ to thêm chút nữa tạo cảm giác tương tác tốt */
+.kanji-cell:hover .kanji-char {
+    transform: scale(1.1);
+    color: #000;
 }
 
-.related-item {
-    font-family: 'Klee One', cursive;
-    font-size: 18px;
-    color: #444;
-    cursor: pointer;
-    transition: 0.2s;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    background: #f9f9f9;
+/* Hiệu ứng viền đen khi Hover (vẫn giữ nguyên kiểu "phẳng" bạn thích) */
+.kanji-cell:hover {
+    box-shadow: 0 0 0 0.5px #818080; 
+    border-color: #7e7d7d;
+    transform: translateY(-3px);
+    z-index: 10;
 }
 
-.related-item:hover {
-    color: var(--muji-red);
-    background: #fffafa;
+/* Đổi màu chữ và Hán Việt sang trắng khi nền đỏ */
+.kanji-cell.selected .kanji-char {
+    color: #ffffff !important;
 }
+
+.kanji-cell.selected .hv-label {
+    color: rgba(255, 255, 255, 0.9) !important; /* Trắng hơi trong suốt cho âm Hán Việt */
+}
+
 /* Âm Hán Việt bên dưới */
 .hv-label {
-    font-size: 9px; 
+    font-size: 12px; 
     font-weight: 700;
     color: #999;
     text-transform: uppercase;
@@ -256,8 +313,29 @@
             border-bottom: 1px solid #eee;
         }
 
-       @media (max-width: 600px) {
-    /* Khi đang xem chi tiết, ta sẽ thêm class 'active' vào right-side */
+     /* --- ĐIỀU CHỈNH RIÊNG CHO IPHONE (THEO ẢNH MẪU) --- */
+@media (max-width: 600px) {
+    .kanji-grid {
+        /* ÉP CỐ ĐỊNH 3 CỘT TRÊN MỘT HÀNG */
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .kanji-char {
+        font-size: 32px !important; /* Chỉnh lại một chút cho vừa ô vuông nhỏ */
+    }
+
+    .hv-label {
+        font-size: 10px !important;
+    }
+
+    .kanji-cell {
+        border-radius: 15px; /* Mobile bo góc nhỏ hơn chút cho cân đối */
+    }
+
+
+    /* Khi có class active thì hiện toàn màn hình */
     .right-side.active {
         display: flex !important;
         position: fixed;
@@ -265,34 +343,189 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        z-index: 9999;
+        z-index: 10000; /* Đảm bảo đè lên mọi thứ khác */
         background: var(--muji-bg);
         padding: 20px;
+        flex-direction: column;
         overflow-y: auto;
-        animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        animation: slideUp 0.3s ease-out;
     }
 
-    /* Tạo một nút đóng ảo cho mobile */
-    .right-side.active::before {
-        content: '✕ Đóng';
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background: var(--muji-red);
-        color: white;
-        padding: 8px 15px;
-        border-radius: 10px;
-        font-weight: bold;
+    /* Nút đóng chuyên dụng cho Mobile */
+    .mobile-close-btn {
+        display: block !important; /* Hiện nút này trên mobile */
+        width: 100%;
+        padding: 15px;
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 15px;
+        font-weight: 800;
+        color: var(--muji-red);
+        margin-bottom: 20px;
+        cursor: pointer;
+        text-transform: uppercase;
         font-size: 14px;
-        z-index: 10001;
+        -webkit-tap-highlight-color: transparent;
     }
 }
-
-@keyframes slideUp {
-    from { transform: translateY(100%); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+/* 1. THANH BANNER MÀU TRẮNG TINH */
+/* SEARCH BANNER: Nằm gọn trong Master Box */
+.kanji-control-banner {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #ffffff !important;
+    padding: 15px;
+    margin: 0;
+    border-bottom: 1px solid #eee;
+    width: 100%;
+    display: flex;
+    flex-direction: column; /* Trên iPhone nên để dọc cho thoáng */
+    gap: 10px;
 }
 
+/* 2. KHUNG SEARCH: Dùng flex để tự co lại */
+.muji-search-box {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: #f7f7f7;
+    border: 1px solid #eeeeee;
+    border-radius: 20px;
+    padding: 0 15px; /* Giảm padding để tiết kiệm không gian */
+    height: 50px;    /* Cố định chiều cao cho đẹp */
+    min-width: 0;    /* Quan trọng: Giúp flexbox không bị tràn */
+}
+
+/* 3. INPUT: Đảm bảo không đẩy khung ra ngoài */
+.muji-search-box input {
+    flex: 1;
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    background: transparent;
+    padding: 10px;
+    min-width: 0; 
+}
+
+/* Khung tìm kiếm: To, dài và thoáng hơn */
+.muji-search-box {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: #f7f7f7; /* Màu xám nhạt */
+    border: 1px solid #eeeeee;
+    border-radius: 20px; /* Bo góc tròn hơn */
+    padding: 15px 25px;   /* Tăng padding để khung cao hơn */
+    width: 100%;
+    max-width: 600px;    /* Tăng chiều dài tối đa (từ 400px lên 600px) */
+    transition: all 0.3s ease;
+}
+
+/* Chữ bên trong ô tìm kiếm to hơn */
+.muji-search-box input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 18px;     /* Tăng kích thước chữ nhập liệu */
+    color: var(--muji-text);
+    background: transparent;
+    padding: 0 15px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+}
+/* Làm mờ chữ gợi ý (Placeholder) trong ô tìm kiếm */
+.muji-search-box input::placeholder {
+    color: #999; /* Màu xám nhạt hơn */
+    opacity: 0.6; /* Độ mờ 60% */
+    font-weight: 400; /* Nét chữ thanh mảnh hơn */
+}
+/* Khi nhấn vào ô tìm kiếm */
+.muji-search-box:focus-within {
+    background: white;
+    border-color:  #898787; /* Màu xám nhạt hơn */
+    box-shadow: 0 4px 20px rgba(92, 92, 92, 0.08); /* Bóng đổ mịn hơn khi to ra */
+}
+
+/* Biểu tượng kính lúp to hơn chút cho cân đối */
+.muji-search-box svg {
+    width: 20px;
+    height: 20px;
+    opacity: 0.5;
+}
+
+/* Nút viết tay nhỏ nằm gọn trong khung search */
+.draw-btn-inside {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    opacity: 0.5;
+    transition: 0.2s;
+    padding: 0;
+    margin-left: 5px;
+}
+
+.draw-btn-inside:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+.banner-left, .banner-right {
+    display: flex;
+    gap: 8px;
+}
+
+/* Nút bấm trong banner - Phiên bản to hơn */
+.banner-btn {
+    border: 1px solid var(--gray-border);
+    background: var(--gray-cell);
+    padding: 12px 20px; /* Tăng từ 8px 12px lên 12px 20px */
+    border-radius: 15px; /* Bo góc mượt hơn */
+    font-size: 13px;     /* Chữ to hơn cho dễ đọc */
+    font-weight: 800;    /* Giữ độ đậm tối đa */
+    color: #777;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px; /* Khoảng cách chữ thoáng hơn */
+    white-space: nowrap; /* Không cho chữ xuống dòng khi nút to */
+    height: 52px;        /* Độ cao bằng với ô Search để thẳng hàng */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Nút viết tay nổi bật hơn */
+.banner-btn.primary {
+    border-color: var(--muji-red);
+    color: var(--muji-red);
+    background: white;
+}
+
+.banner-btn:hover {
+    background: var(--muji-red);
+    color: white;
+    border-color: var(--muji-red);
+}
+
+/* Nút ẩn hiện khi ở trạng thái Active (đã tắt HV) */
+.banner-btn.active-toggle {
+    background: #555;
+    color: white;
+    border-color: #555;
+}
+
+/* Điều chỉnh lại Master Box để mượt hơn */
+.master-box {
+    position: relative;
+    padding-top: 20px;
+}
+/* Ẩn nút đóng này khi xem trên máy tính */
+@media (min-width: 601px) {
+    .mobile-close-btn {
+        display: none !important;
+    }
+}
 /* Hiệu ứng nhẹ khi di chuột vào ô (tùy chọn) */
 .reading-grid div:hover {
     border-color: #d0d0d0;
@@ -369,18 +602,41 @@
                 <button class="btn-feature" onclick="goToFlashcards()">+ Flashcard</button>
                 <button class="btn-feature" onclick="goToWritingSheet()">+ In PDF</button>
             </div>
-            <div class="feature-row">
-            <button class="btn-feature" id="toggle-hv-btn" onclick="toggleHánViệt()">Ẩn Hán Việt</button>
-    <button class="btn-feature" onclick="selectAllInGrid()">Chọn / Bỏ chọn tất cả</button>
-            </div>
+          
             <div class="master-box">
-                <div class="kanji-grid" id="kanji-grid"></div>
-               
-            </div>
+    <div class="kanji-control-banner">
+        <div class="muji-search-box">
+           <span style="opacity: 0.4; font-size: 14px; display: flex; align-items: center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    </span>
+    
+    <input type="text" id="miniSearchInput" placeholder="Tìm Kanji, Hán Việt..." oninput="filterKanjiInGrid()">
+    
+    <button class="draw-btn-inside" onclick="openModal()" title="viết tay">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+        </svg>
+    </button>
+        </div>
+        
+        <div class="banner-right">
+            <button class="banner-btn secondary" id="toggle-hv-btn" onclick="toggleHánViệt()">
+                ẨN HÁN VIỆT
+            </button>
+            <button class="banner-btn secondary" onclick="selectAllInGrid()">
+                CHỌN TẤT CẢ
+            </button>
+        </div>
+    </div>
+
+    <div class="kanji-grid" id="kanji-grid"></div>
+</div>
         </div>
 
         <div class="right-side">
-            <button class="btn-search-full" onclick="openModal()"> + TRA CỨU VIẾT TAY </button>
+           <button class="mobile-close-btn" onclick="closePreview()">✕ ĐÓNG CHI TIẾT</button>
+            
             
             <div class="preview-card">
                 <button id="btn-go-practice" style="width: 100%; background: #a63d40; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: bold; margin-bottom: 15px; cursor: pointer;">✍️ LUYỆN VIẾT RIÊNG</button>
@@ -598,21 +854,40 @@ function showBoThuDetails(item) {
     const strokesRadicalRow = document.getElementById('strokes-val').parentElement.parentElement;
     if (strokesRadicalRow) strokesRadicalRow.style.display = 'none';
     
+    
     // ẨN KHUNG ÂM ON VÀ ÂM KUN
     const readingGrid = document.getElementById('on-val').parentElement.parentElement;
     if (readingGrid) readingGrid.style.display = 'none';
 
     // Ẩn phần từ vựng mở rộng
     document.getElementById('vocab-section').style.display = 'none';
-    
-    // 4. VẼ ANIMATION CHO CHỮ ĐẦU TIÊN
-    document.getElementById('writer-canvas').innerHTML = '';
-    if (firstChar) {
-        HanziWriter.create('writer-canvas', firstChar, { 
-            width: 160, height: 160, strokeColor: '#a63d40' 
-        }).animateCharacter();
+
+    // 3. HIỆN TOÀN MÀN HÌNH TRÊN MOBILE
+    const rightSide = document.querySelector('.right-side');
+    if (window.innerWidth <= 600) {
+        rightSide.classList.add('active');
+        
+        // Thêm sự kiện click để đóng khi nhấn vào chữ "✕ Đóng"
+        rightSide.onclick = (e) => {
+            if (e.target === rightSide || e.offsetX > rightSide.offsetWidth - 100 && e.offsetY < 100) {
+                rightSide.classList.remove('active');
+            }
+        };
     }
-}
+    
+   // Tìm đến dòng HanziWriter.create và cập nhật options
+HanziWriter.create('writer-canvas', item.c, {
+    width: 160,
+    height: 160,
+    strokeColor: '#a63d40',
+    showOutline: true,       // Hiện nét mờ hướng dẫn
+    showCharacter: false,
+    padding: 15,             // Khoảng cách với viền khung
+    // Tùy chọn thêm đường kẻ chéo (nếu thích)
+    radicalColor: '#333' 
+}).animateCharacter();
+    }
+
 
         // 1. DỮ LIỆU
         async function loadData() {
@@ -691,12 +966,38 @@ function showBoThuDetails(item) {
         grid.appendChild(cell);
     });
 }
-
+// Hàm đóng Preview Card trên điện thoại
+function closePreview() {
+    const rightSide = document.querySelector('.right-side');
+    if (rightSide) {
+        rightSide.classList.remove('active');
+        typeText("Đã đóng chi tiết, mời cậu chọn chữ khác!");
+    }
+}
+function filterKanjiInGrid() {
+    const query = document.getElementById('miniSearchInput').value.trim().toLowerCase();
+    const cells = document.querySelectorAll('.kanji-cell');
+    
+    cells.forEach(cell => {
+        const kanji = cell.querySelector('.kanji-char').innerText.toLowerCase();
+        const hanviet = cell.querySelector('.hv-label').innerText.toLowerCase();
+        
+        if (kanji.includes(query) || hanviet.includes(query)) {
+            cell.style.display = "flex";
+        } else {
+            cell.style.display = "none";
+        }
+    });
+}
        // Hàm hiển thị chi tiết chữ Kanji (N1-N5)
 function showDetails(item) {
     typeText(`Cậu đang xem chi tiết chữ "${item.c}". Hãy nhìn cách viết ở trong khung nhé!`);
     window.currentSelectedKanji = item.c;
-    
+    // 2. Hiện lại hàng Số nét & Bộ thủ (đã bị ẩn bởi showBoThuDetails)
+    const strokesRadicalRow = document.getElementById('strokes-val').parentElement.parentElement;
+    if (strokesRadicalRow) {
+        strokesRadicalRow.style.display = 'flex'; // Hiện lại hàng ngang
+    }
     // Đổ dữ liệu cơ bản
     document.getElementById('hv-val').textContent = item.hv || "---";
     document.getElementById('mean-val').textContent = item.m || "";
@@ -706,18 +1007,6 @@ function showDetails(item) {
     // ĐỔ DỮ LIỆU SỐ NÉT & BỘ THỦ (Lấy từ item.strokes và item.radical)
     document.getElementById('strokes-val').innerText = item.strokes || "-";
     document.getElementById('radical-val').innerText = item.radical || "-";
-    // 3. HIỆN TOÀN MÀN HÌNH TRÊN MOBILE
-    const rightSide = document.querySelector('.right-side');
-    if (window.innerWidth <= 600) {
-        rightSide.classList.add('active');
-        
-        // Thêm sự kiện click để đóng khi nhấn vào chữ "✕ Đóng"
-        rightSide.onclick = (e) => {
-            if (e.target === rightSide || e.offsetX > rightSide.offsetWidth - 100 && e.offsetY < 100) {
-                rightSide.classList.remove('active');
-            }
-        };
-    }
 
     const vSection = document.getElementById('vocab-section');
     const vList = document.getElementById('vocab-list');
@@ -725,7 +1014,6 @@ function showDetails(item) {
 // HIỆN LẠI KHUNG ON/KUN KHI XEM KANJI
     const readingGrid = document.querySelector('.reading-grid') || document.getElementById('on-val').parentElement.parentElement;
     if (readingGrid) readingGrid.style.display = 'flex';
-    
     // HIỂN THỊ TỪ VỰNG: Kanji đỏ to, Hiragana xám
     if (item.v && item.v.length > 0) {
         vSection.style.display = 'block';
@@ -744,7 +1032,13 @@ function showDetails(item) {
     } else {
         vSection.style.display = 'none';
     }
-    
+    // 3. KÍCH HOẠT PREVIEW CARD TRÊN MOBILE
+    if (window.innerWidth <= 600) {
+        const rightSide = document.querySelector('.right-side');
+        rightSide.classList.add('active');
+        // Cuộn lên đầu Card
+        rightSide.scrollTop = 0;
+    }
     // Vẽ animation
     document.getElementById('writer-canvas').innerHTML = '';
     HanziWriter.create('writer-canvas', item.c, { 
