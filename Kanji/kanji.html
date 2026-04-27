@@ -49,14 +49,19 @@ body {
     /* Bỏ position: sticky và top: 20px cũ nếu có */
 }
 
-/* Cột bên phải */
+/* Khung bên phải mặc định sẽ ẩn */
 .right-side {
-    flex: 0.8;
-    position: sticky; /* Ghim cả cột phải */
-    top: 20px;       /* Cách mép trên 20px giống bên trái */
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+    position: sticky;
+    top: 40px !important;
+    z-index: 500;
+    transition: all 0.4s ease; /* Hiệu ứng hiện ra mượt mà */
+    
+    /* Trạng thái ẩn */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(20px); /* Hơi lệch sang phải một chút */
+    width: 0; /* Thu hẹp chiều rộng để Master Box giãn ra */
+    pointer-events: none; /* Không cho tương tác khi đang ẩn */
 }
 
         /* --- BOT AREA --- */
@@ -150,7 +155,8 @@ body {
     border: 1px solid var(--gray-border);
     border-radius: 25px;
     padding: 0 20px 20px 20px;
-    
+    flex: 1;
+    transition: all 0.4s ease;
     position: sticky;
     top: 40px; /* Cùng giá trị với padding-top của body */
     z-index: 500;
@@ -310,6 +316,14 @@ body {
         overflow-y: auto;
         animation: slideUp 0.3s ease-out;
     }
+    /* Khi có class "active", khung sẽ hiện ra */
+.right-side.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+    width: 450px; /* Chiều rộng gốc của bạn */
+    pointer-events: auto;
+}
 
     /* Nút đóng chuyên dụng cho Mobile */
     .mobile-close-btn {
