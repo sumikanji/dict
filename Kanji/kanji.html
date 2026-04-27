@@ -311,30 +311,36 @@ body {
 
      /* --- ĐIỀU CHỈNH RIÊNG CHO IPHONE --- */
 @media (max-width: 600px) {
+    .main-layout {
+        flex-direction: column; /* Mobile xếp chồng dọc */
+    }
+
     .master-box {
-        border-radius: 20px; /* Bo góc nhẹ hơn chút trên mobile */
+        border-radius: 20px;
     }
 
     .kanji-control-banner {
-        border-radius: 20px 20px 0 0; /* Khớp với Master Box mobile */
-        padding: 12px 8px;
+        border-radius: 20px 20px 0 0;
+        /* Vẫn giữ sticky để thanh search luôn ở trên khi cuộn */
+        position: sticky; 
+        top: 0;
+        z-index: 1000;
+        padding: 12px;
     }
 
     .kanji-grid {
-        /* 3 cột cố định, to và rõ */
+        /* Ép đúng 3 cột tràn viền, to và rõ */
         grid-template-columns: repeat(3, 1fr) !important;
         gap: 8px;
-        padding: 10px 8px; /* Đảm bảo lề trái phải thẳng hàng với ô tìm kiếm */
+        padding: 10px;
     }
 
     .kanji-cell {
-        aspect-ratio: 1 / 1;
-        border-radius: 15px;
-        padding: 5px;
+        aspect-ratio: 1 / 1; /* Hình vuông */
     }
 
     .kanji-char {
-        font-size: 38px !important; /* To và rõ như ảnh mẫu */
+        font-size: 38px !important;
     }
 
 
