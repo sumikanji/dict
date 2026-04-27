@@ -181,12 +181,11 @@ body {
     margin-top: 20px;
 }
 
-/* --- CHO PC (MẶC ĐỊNH) --- */
+/* --- DÀNH CHO PC: Càng rộng càng nhiều cột --- */
 .kanji-grid {
     display: grid;
-    /* KHÔNG DÙNG repeat(3, 1fr) ở đây */
-    /* Dùng auto-fill để PC tự dãn: Càng rộng càng nhiều cột */
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important; 
+    /* Dùng auto-fill để PC tự dãn, min-width chỉ 100px để linh hoạt */
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
     gap: 15px;
     padding: 20px;
     width: 100%;
@@ -312,39 +311,25 @@ body {
             border-bottom: 1px solid #eee;
         }
 
-     /* --- ĐIỀU CHỈNH RIÊNG CHO IPHONE --- */
+  /* --- 2. CẤU HÌNH CHO IPHONE (MÀN HÌNH HẸP) --- */
+/* Chỉ kích hoạt khi chiều ngang màn hình nhỏ hơn 600px */
 @media (max-width: 600px) {
-    .main-layout {
-        flex-direction: column; /* Mobile xếp chồng dọc */
-    }
-
-    .master-box {
-        border-radius: 20px;
-    }
-
-    .kanji-control-banner {
-        border-radius: 20px 20px 0 0;
-        /* Vẫn giữ sticky để thanh search luôn ở trên khi cuộn */
-        position: sticky; 
-        top: 0;
-        z-index: 1000;
-        padding: 12px;
-    }
-
     .kanji-grid {
-        /* Ép đúng 3 cột tràn viền, to và rõ */
+        /* Ép đúng 3 cột và ghi đè hoàn toàn cấu hình PC ở trên */
         grid-template-columns: repeat(3, 1fr) !important;
         gap: 8px;
-        padding: 10px;
+        padding: 8px;
     }
 
     .kanji-cell {
-        aspect-ratio: 1 / 1; /* Hình vuông */
+        aspect-ratio: 1 / 1; /* Giữ ô hình vuông trên điện thoại */
+        min-width: 0; /* Ngăn ô đẩy khung */
     }
 
     .kanji-char {
-        font-size: 38px !important;
+        font-size: 32px !important;
     }
+
 
 
 
@@ -404,15 +389,15 @@ body {
     width: 100%;
 }
 
-/* Lưới Kanji: Chia 3 cột đều và khít */
+/* --- 1. CẤU HÌNH CHO PC (MẶC ĐỊNH) --- */
+/* Dùng auto-fill để máy tính tự hiển thị tối đa số ô trên một hàng */
 .kanji-grid {
     display: grid;
-    /* Ép đúng 3 cột bằng nhau, mỗi cột chiếm 1 phần không gian */
-    grid-template-columns: repeat(3, 1fr) !important; 
-    gap: 10px;       /* Khoảng cách giữa các ô */
-    padding: 10px;   /* Khoảng cách với viền Master Box */
-    width: 100%;     /* Luôn nằm trong cha */
-    box-sizing: border-box; 
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+    gap: 15px;
+    padding: 15px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* 2. KHUNG SEARCH: Dùng flex để tự co lại */
