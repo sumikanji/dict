@@ -168,19 +168,15 @@ body {
       /* 2. Giới hạn chiều cao của khung chứa Kanji và cho phép cuộn */
 /* --- CHỈ SỬA KHUNG MASTER BOX --- */
 
+/* 1. MASTER BOX: Khung bao ngoài */
 .master-box {
     background: #f7f7f7;
     border: 1px solid var(--gray-border);
     border-radius: 25px;
     width: 100%;
-    
-    /* KHÔNG CUỘN NỘI BỘ: Dãn dài tự nhiên theo số lượng Kanji */
-    height: auto !important; 
-    max-height: none !important;
-    overflow: visible !important; 
-    
-    /* TRÀN VIỀN: Bỏ padding để Grid bám sát mép */
-    padding: 0; 
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0; /* Để 0 để Banner và Grid bám sát viền */
     position: relative;
     margin-top: 20px;
 }
@@ -313,35 +309,34 @@ body {
             border-bottom: 1px solid #eee;
         }
 
-     /* --- ĐIỀU CHỈNH RIÊNG CHO IPHONE: CHỮ TO & TRÀN VIỀN --- */
+     /* --- ĐIỀU CHỈNH RIÊNG CHO IPHONE --- */
 @media (max-width: 600px) {
+    .master-box {
+        border-radius: 20px; /* Bo góc nhẹ hơn chút trên mobile */
+    }
+
+    .kanji-control-banner {
+        border-radius: 20px 20px 0 0; /* Khớp với Master Box mobile */
+        padding: 12px 8px;
+    }
+
     .kanji-grid {
-        /* Vẫn giữ 3 cột nhưng giảm khoảng cách gap và padding */
+        /* 3 cột cố định, to và rõ */
         grid-template-columns: repeat(3, 1fr) !important;
-        gap: 6px;       /* Giảm khoảng cách giữa các ô để tăng diện tích ô */
-        padding: 8px;   /* Giảm padding lề để các ô to ra sát mép */
+        gap: 8px;
+        padding: 10px 8px; /* Đảm bảo lề trái phải thẳng hàng với ô tìm kiếm */
     }
 
     .kanji-cell {
-        aspect-ratio: 1 / 1; 
-        padding: 5px;   /* Giảm padding bên trong ô để nhường chỗ cho chữ */
-        border-radius: 12px;
+        aspect-ratio: 1 / 1;
+        border-radius: 15px;
+        padding: 5px;
     }
 
     .kanji-char {
-        /* TĂNG KÍCH THƯỚC CHỮ Ở ĐÂY */
-        font-size: 40px !important; 
-        font-weight: 400; /* Klee One nét mảnh nhưng to nhìn sẽ rất sang */
-        margin-bottom: 2px !important;
-        line-height: 1.1;
+        font-size: 38px !important; /* To và rõ như ảnh mẫu */
     }
 
-    .hv-label {
-        /* Hán Việt nhỏ lại một chút để tập trung vào mặt chữ */
-        font-size: 9px !important;
-        letter-spacing: 0;
-        opacity: 0.7;
-    }
 
 
 
@@ -379,20 +374,34 @@ body {
     }
 }
 /* 1. THANH BANNER MÀU TRẮNG TINH */
-/* SEARCH BANNER: Nằm gọn trong Master Box */
+/* 2. KANJI CONTROL BANNER: Thanh tìm kiếm trên cùng */
 .kanji-control-banner {
     position: sticky;
     top: 0;
     z-index: 1000;
     background: #ffffff !important;
-    padding: 15px;
+    
+    /* Padding cân đối: 15px trên dưới, 10px hai bên */
+    padding: 15px 10px; 
     margin: 0;
-    border-bottom: 1px solid #eee;
-    width: 100%;
+    
+    /* Bo góc trên để khít hoàn toàn với Master Box */
+    border-radius: 25px 25px 0 0; 
+    border-bottom: 1px solid #eeeeee;
+    
     display: flex;
-    flex-direction: column; /* Trên iPhone nên để dọc cho thoáng */
+    flex-direction: column; 
     gap: 10px;
-    border-radius: 25px 25px 0 0;
+    width: 100%;
+}
+
+/* 3. KANJI GRID: Lưới hiển thị chữ */
+.kanji-grid {
+    display: grid;
+    /* PC: Tự động sắp xếp */
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    padding: 15px 10px; /* Padding hai bên 10px để thẳng hàng với Banner */
 }
 
 /* 2. KHUNG SEARCH: Dùng flex để tự co lại */
