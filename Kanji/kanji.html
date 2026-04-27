@@ -313,26 +313,36 @@ body {
             border-bottom: 1px solid #eee;
         }
 
-     /* --- ĐIỀU CHỈNH RIÊNG CHO IPHONE (THEO ẢNH MẪU) --- */
+     /* --- ĐIỀU CHỈNH RIÊNG CHO IPHONE: CHỮ TO & TRÀN VIỀN --- */
 @media (max-width: 600px) {
     .kanji-grid {
-        /* ÉP CỐ ĐỊNH 3 CỘT TRÊN MỘT HÀNG */
+        /* Vẫn giữ 3 cột nhưng giảm khoảng cách gap và padding */
         grid-template-columns: repeat(3, 1fr) !important;
-        gap: 10px;
-        padding: 10px;
-    }
-
-    .kanji-char {
-        font-size: 32px !important; /* Chỉnh lại một chút cho vừa ô vuông nhỏ */
-    }
-
-    .hv-label {
-        font-size: 10px !important;
+        gap: 6px;       /* Giảm khoảng cách giữa các ô để tăng diện tích ô */
+        padding: 8px;   /* Giảm padding lề để các ô to ra sát mép */
     }
 
     .kanji-cell {
-        border-radius: 15px; /* Mobile bo góc nhỏ hơn chút cho cân đối */
+        aspect-ratio: 1 / 1; 
+        padding: 5px;   /* Giảm padding bên trong ô để nhường chỗ cho chữ */
+        border-radius: 12px;
     }
+
+    .kanji-char {
+        /* TĂNG KÍCH THƯỚC CHỮ Ở ĐÂY */
+        font-size: 40px !important; 
+        font-weight: 400; /* Klee One nét mảnh nhưng to nhìn sẽ rất sang */
+        margin-bottom: 2px !important;
+        line-height: 1.1;
+    }
+
+    .hv-label {
+        /* Hán Việt nhỏ lại một chút để tập trung vào mặt chữ */
+        font-size: 9px !important;
+        letter-spacing: 0;
+        opacity: 0.7;
+    }
+
 
 
     /* Khi có class active thì hiện toàn màn hình */
@@ -382,31 +392,31 @@ body {
     display: flex;
     flex-direction: column; /* Trên iPhone nên để dọc cho thoáng */
     gap: 10px;
+    border-radius: 25px 25px 0 0;
 }
 
 /* 2. KHUNG SEARCH: Dùng flex để tự co lại */
+/* Ô TÌM KIẾM: Tận dụng tối đa không gian ngang */
 .muji-search-box {
     flex: 1;
     display: flex;
     align-items: center;
     background: #f7f7f7;
     border: 1px solid #eeeeee;
-    border-radius: 20px;
-    padding: 0 15px; /* Giảm padding để tiết kiệm không gian */
-    height: 50px;    /* Cố định chiều cao cho đẹp */
-    min-width: 0;    /* Quan trọng: Giúp flexbox không bị tràn */
+    border-radius: 15px; /* Bo góc nhẹ nhàng hơn cho ô input */
+    padding: 0 15px;
+    height: 50px;
+    width: 100%;
 }
 
-/* 3. INPUT: Đảm bảo không đẩy khung ra ngoài */
 .muji-search-box input {
     flex: 1;
     width: 100%;
     border: none;
     outline: none;
-    font-size: 16px;
     background: transparent;
-    padding: 10px;
-    min-width: 0; 
+    font-size: 16px;
+    color: var(--muji-text);
 }
 
 /* Khung tìm kiếm: To, dài và thoáng hơn */
@@ -831,25 +841,53 @@ function renderBoThuGrid(data) {
 }
 
 function showBoThuDetails(item) {
-    // 1. Lấy toàn bộ các chữ trong phần BO (ví dụ: "人, 亻")
-    const allChars = item.BO || "";
-    // Chữ đầu tiên dùng để Robot vẽ mẫu
-    const firstChar = allChars.split(',')[0].trim();
-    
-    typeText(`Bộ thủ: ${allChars} - Ý nghĩa: ${item.NGHIA}`);
-    window.currentSelectedKanji = firstChar;
-    
-    // 2. HIỂN THỊ MẶT CHỮ TO VÀ TÊN HÁN VIỆT
-    // Tôi sử dụng font Klee One và cỡ chữ 55px để mặt chữ nổi bật
-    document.getElementById('hv-val').innerHTML = `
-        <div style="font-family: 'Klee One', cursive; font-size: 55px; line-height: 1.2; margin-bottom: 5px; color: var(--muji-red);">
-            ${allChars}
-        </div>
-        <div style="font-size: 24px; letter-spacing: 4px; color: var(--muji-text);">${item["TEN BO"] || "---"}</div>
-    `;
+ // 1. Xử lý ký tự
+const allChars = item.BO || "";
+const firstChar = allChars.split(',')[0].trim(); 
 
-    document.getElementById('mean-val').textContent = item.NGHIA || "Chưa có nghĩa";
-    
+typeText(`Bộ thủ: ${allChars} - Ý nghĩa: ${item.NGHIA}`);
+window.currentSelectedKanji = firstChar;
+
+// 2. Cập nhật giao diện chữ to
+document.getElementById('hv-val').innerHTML = `
+    <div style="font-family: 'Klee One', cursive; font-size: 55px; line-height: 1.2; margin-bottom: 5px; color: var(--muji-red);">
+        ${allChars}
+    </div>
+    <div style="font-size: 24px; letter-spacing: 2px; color: var(--muji-text);">${item["TEN BO"] || "---"}</div>
+`;
+document.getElementById('mean-val').textContent = item.NGHIA || "Chưa có nghĩa";
+
+// 3. FIX LỖI VẼ MỘT NỬA & GIẬT HÌNH
+const canvasDiv = document.getElementById('writer-canvas');
+if (canvasDiv) {
+    // Xóa sạch nội dung và hủy writer cũ ngay lập tức
+    canvasDiv.innerHTML = ''; 
+    if (window.currentWriter) {
+        window.currentWriter = null; 
+    }
+
+    // CHỈ DÙNG MỘT LỆNH VẼ DUY NHẤT TRONG SETTIMEOUT
+    setTimeout(() => {
+        canvasDiv.innerHTML = ''; // Đảm bảo khung trắng tinh trước khi vẽ
+        
+        window.currentWriter = HanziWriter.create('writer-canvas', firstChar, {
+            width: 160,
+            height: 160,
+            strokeColor: '#a63d40',
+            outlineColor: '#f0f0f0',
+            showOutline: true,
+            padding: 25, // Tăng padding một chút để chữ nằm gọn trong bóng đổ
+            strokeAnimationSpeed: 1.2,
+            delayBetweenStrokes: 150
+        });
+        
+        window.currentWriter.animateCharacter();
+    }, 450); // Đợi 450ms để iPhone trượt xong hoàn toàn và ổn định bộ nhớ
+}
+
+// 4. LƯU Ý: KHÔNG gọi thêm drawStroke(firstChar) ở đây nếu hàm đó cũng tạo writer
+// Vì nó sẽ gây ra lỗi vẽ chồng nét thêm một lần nữa.
+
   // ẨN PHẦN SỐ NÉT VÀ BỘ THỦ NHỎ (Cả hàng ngang chứa dấu |)
     const strokesRadicalRow = document.getElementById('strokes-val').parentElement.parentElement;
     if (strokesRadicalRow) strokesRadicalRow.style.display = 'none';
