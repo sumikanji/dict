@@ -168,17 +168,15 @@ body {
       /* 2. Giới hạn chiều cao của khung chứa Kanji và cho phép cuộn */
 /* --- CHỈ SỬA KHUNG MASTER BOX --- */
 
-/* 1. MASTER BOX: Khung bao ngoài */
 .master-box {
     background: #f7f7f7;
     border: 1px solid var(--gray-border);
     border-radius: 25px;
     width: 100%;
     height: auto !important;
-    overflow: visible !important;
-    padding: 0; /* Để 0 để Banner và Grid bám sát viền */
-    position: relative;
+    overflow: hidden; /* Quan trọng: Không cho nội dung bên trong trào ra */
     margin-top: 20px;
+    box-sizing: border-box;
 }
 
 /* KANJI GRID: Chia 3 cột đều tăm tắp */
@@ -198,21 +196,21 @@ body {
 }
 
 
-/* Biến ô thành hình chữ nhật */
+/* Ô Kanji: Hình vuông hoàn hảo, không được tràn */
 .kanji-cell {
-    width: 100%;
-    height: 120px; /* Chiều cao thấp hơn chiều rộng để tạo hình chữ nhật ngang */
-    background: #ffffff; 
-    border-radius: 18px; 
-    display: flex; 
+    width: 100%;     /* Tự động theo độ rộng của cột grid */
+    aspect-ratio: 1 / 1; /* Luôn giữ hình vuông */
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 18px;
+    display: flex;
     flex-direction: column;
-    align-items: center; 
-    justify-content: center; 
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1px solid #efefef;
-    padding: 10px;
-    gap: 8px !important; /* Khoảng cách giữa Kanji và Hán Việt */
+    align-items: center;
+    justify-content: center;
+    padding: 5px;    /* Padding nhỏ để chữ to nhất có thể */
+    box-sizing: border-box; /* Đảm bảo padding không làm phình ô */
+    min-width: 0;    /* Ngăn chặn ô đẩy khung ra ngoài */
+    overflow: hidden; /* Cắt bỏ phần thừa nếu có */
 }
 
 /* Phóng to mặt chữ Kanji chính - Giúp nhìn rõ từng nét */
@@ -382,32 +380,26 @@ body {
 /* 1. THANH BANNER MÀU TRẮNG TINH */
 /* 2. KANJI CONTROL BANNER: Thanh tìm kiếm trên cùng */
 .kanji-control-banner {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    background: #ffffff !important;
-    
-    /* Padding cân đối: 15px trên dưới, 10px hai bên */
-    padding: 15px 10px; 
-    margin: 0;
-    
-    /* Bo góc trên để khít hoàn toàn với Master Box */
-    border-radius: 25px 25px 0 0; 
-    border-bottom: 1px solid #eeeeee;
-    
-    display: flex;
-    flex-direction: column; 
-    gap: 10px;
     width: 100%;
+    padding: 15px 10px;
+    box-sizing: border-box; /* Ép banner phải tính cả padding vào chiều rộng */
+    border-bottom: 1px solid #eee;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-radius: 25px 25px 0 0;
 }
 
-/* 3. KANJI GRID: Lưới hiển thị chữ */
+/* Lưới Kanji: Chia 3 cột đều và khít */
 .kanji-grid {
     display: grid;
-    /* PC: Tự động sắp xếp */
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 12px;
-    padding: 15px 10px; /* Padding hai bên 10px để thẳng hàng với Banner */
+    /* Ép đúng 3 cột bằng nhau, mỗi cột chiếm 1 phần không gian */
+    grid-template-columns: repeat(3, 1fr) !important; 
+    gap: 10px;       /* Khoảng cách giữa các ô */
+    padding: 10px;   /* Khoảng cách với viền Master Box */
+    width: 100%;     /* Luôn nằm trong cha */
+    box-sizing: border-box; 
 }
 
 /* 2. KHUNG SEARCH: Dùng flex để tự co lại */
