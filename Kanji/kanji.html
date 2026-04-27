@@ -29,13 +29,15 @@ body {
 }
 
        /* --- LAYOUT CHIA CỘT --- */
+/* 1. Đảm bảo layout chính không bị tràn ngang trên iPhone */
 .main-layout {
     display: flex;
-    align-items: flex-start; /* Quan trọng để các con sticky được */
+    align-items: flex-start;
     gap: 30px;
-    width: 95%;
+    width: 100%; /* Đổi từ 95% thành 100% để linh hoạt hơn */
     max-width: 1300px;
-    margin-top: 30px;
+    margin: 20px auto;
+    padding: 0 15px; /* Thêm padding để không bị dính sát mép trái phải */
 }
 
 /* Cột bên trái: Không dùng sticky ở đây nữa */
@@ -152,11 +154,16 @@ body {
     position: sticky;
     top: 40px; /* Cùng giá trị với padding-top của body */
     z-index: 500;
-
-    /* Chiều cao tính toán để hiện thanh cuộn riêng */
-    height: calc(100vh - 80px); 
+/* SỬA LỖI IPHONE TẠI ĐÂY */
+    width: 100%;       /* Tự động co lại theo cột cha */
+    height: 80svh;     /* Dùng svh để luôn vừa khít màn hình iPhone mà không bị mất chân */
+    max-height: 800px; /* Giới hạn chiều cao tối đa cho máy tính */
+    
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* Giúp cuộn mượt hơn trên iPhone */
+    scrollbar-width: none;
 }
+   
 
 /* Ẩn thanh cuộn cho Chrome, Safari và Edge mới */
 .master-box::-webkit-scrollbar {
