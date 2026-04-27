@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sumi AI - Kanji Mastery Ultimate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&family=Klee+One:wght@300;400&family=Noto+Serif+JP:wght@200;300&display=swap" rel="stylesheet"> <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400&family=Kiwi+Maru:wght@300&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400&family=Kiwi+Maru:wght@300;400&family=Zen+Maru+Gothic:wght@300;400&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100;300;400&family=Noto+Sans+JP:wght@100;300&family=Noto+Serif+JP:wght@200;300&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&family=Hina+Mincho&family=Zen+Maru+Gothic:wght@500;700&family=IBM+Plex+Sans+JP:wght@500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
     <style>
@@ -33,11 +34,12 @@ body {
 .main-layout {
     display: flex;
     align-items: flex-start;
-    gap: 30px;
-    width: 100%; /* Đổi từ 95% thành 100% để linh hoạt hơn */
-    max-width: 1300px;
+    gap: 20px;
+    width: 100%;
+    max-width: 1400px;
     margin: 20px auto;
-    padding: 0 15px; /* Thêm padding để không bị dính sát mép trái phải */
+    padding: 0 15px;
+    flex-wrap: nowrap; /* PC giữ nguyên hàng ngang */
 }
 
 /* Cột bên trái: Không dùng sticky ở đây nữa */
@@ -295,35 +297,26 @@ body {
             border-bottom: 1px solid #eee;
         }
 
-      @media (max-width: 600px) {
-    /* Mặc định ẩn khung bên phải trên mobile */
-    .right-side { 
-        display: none; 
+      /* ĐIỀU CHỈNH RIÊNG CHO MOBILE (IPHONE) */
+@media (max-width: 600px) {
+    .main-layout {
+        flex-direction: column; /* Mobile xếp chồng lên nhau */
+    }
+    
+    .master-box {
+        width: 100%;
+        height: 65svh; /* Ngắn lại để iPhone dễ nhìn */
     }
 
-    /* Khi có class active thì hiện toàn màn hình */
     .right-side.active {
-        display: flex !important;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 10000; /* Đảm bảo đè lên mọi thứ khác */
+        position: fixed; /* Hiện đè lên toàn màn hình trên Mobile */
+        top: 0; left: 0;
+        width: 100vw; height: 100svh;
         background: var(--muji-bg);
         padding: 20px;
-        flex-direction: column;
-        overflow-y: auto;
-        animation: slideUp 0.3s ease-out;
+        z-index: 9999;
     }
-    /* Khi có class "active", khung sẽ hiện ra */
-.right-side.active {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(0);
-    width: 450px; /* Chiều rộng gốc của bạn */
-    pointer-events: auto;
-}
+    
 
     /* Nút đóng chuyên dụng cho Mobile */
     .mobile-close-btn {
