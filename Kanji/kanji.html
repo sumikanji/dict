@@ -168,15 +168,17 @@ body {
       /* 2. Giới hạn chiều cao của khung chứa Kanji và cho phép cuộn */
 /* --- CHỈ SỬA KHUNG MASTER BOX --- */
 
+/* 1. MASTER BOX: Khung bao ngoài */
 .master-box {
     background: #f7f7f7;
     border: 1px solid var(--gray-border);
     border-radius: 25px;
     width: 100%;
     height: auto !important;
-    overflow: hidden; /* Quan trọng: Không cho nội dung bên trong trào ra */
+    overflow: visible !important;
+    padding: 0; /* Để 0 để Banner và Grid bám sát viền */
+    position: relative;
     margin-top: 20px;
-    box-sizing: border-box;
 }
 
 /* KANJI GRID: Chia 3 cột đều tăm tắp */
@@ -380,15 +382,23 @@ body {
 /* 1. THANH BANNER MÀU TRẮNG TINH */
 /* 2. KANJI CONTROL BANNER: Thanh tìm kiếm trên cùng */
 .kanji-control-banner {
-    width: 100%;
-    padding: 15px 10px;
-    box-sizing: border-box; /* Ép banner phải tính cả padding vào chiều rộng */
-    border-bottom: 1px solid #eee;
-    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #ffffff !important;
+    
+    /* Padding cân đối: 15px trên dưới, 10px hai bên */
+    padding: 15px 10px; 
+    margin: 0;
+    
+    /* Bo góc trên để khít hoàn toàn với Master Box */
+    border-radius: 25px 25px 0 0; 
+    border-bottom: 1px solid #eeeeee;
+    
     display: flex;
-    flex-direction: column;
+    flex-direction: column; 
     gap: 10px;
-    border-radius: 25px 25px 0 0;
+    width: 100%;
 }
 
 /* Lưới Kanji: Chia 3 cột đều và khít */
