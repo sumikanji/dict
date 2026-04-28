@@ -1110,13 +1110,13 @@ window.addEventListener('load', async () => {
     loadNotebookIndex(); // Tải dữ liệu sổ tay trang chủ
 });
 
-// --- CÁC HÀM QUẢN LÝ TRANG (VIEW) ---
+// --- QUẢN LÝ TRANG (VIEW) ---
 
 function openNotebookPage() {
     document.getElementById('home-view').style.display = 'none';
     document.getElementById('word-detail-page').style.display = 'none';
     document.getElementById('notebook-full-page').style.display = 'block';
-    loadNotebookFull();
+    loadNotebookFull(); // Tải danh sách từ vựng
     window.scrollTo(0, 0);
     typeText("cùng ôn tập lại các từ đã lưu nào! 🍵");
 }
@@ -1129,10 +1129,10 @@ function closeNotebookPage() {
 function closeWordDetail() {
     document.getElementById('word-detail-page').style.display = 'none';
     
-    // Kiểm tra xem nên quay về trang nào
+    // Kiểm tra: Nếu trang sổ tay đang mở thì không hiện lại home-view
     const nbPage = document.getElementById('notebook-full-page');
-    if (nbPage.style.display === 'block') {
-        // Vẫn ở trang sổ tay, không làm gì thêm
+    if (nbPage && nbPage.style.display === 'block') {
+        // Vẫn ở trang sổ tay, không làm gì
     } else {
         document.getElementById('home-view').style.display = 'flex';
         document.querySelector('.bot-container').style.display = 'flex';
@@ -1140,29 +1140,47 @@ function closeWordDetail() {
         document.querySelector('.main-card').style.display = 'block';
         document.querySelector('.community-card').style.display = 'block';
     }
-    loadNotebookIndex(); // Cập nhật lại số lượng ở trang chủ
+    loadNotebookIndex(); // Cập nhật số lượng ở trang chủ
 }
 
-// --- CÁC HÀM XỬ LÝ DỮ LIỆU SỔ TAY ---
+// --- XỬ LÝ DỮ LIỆU SỔ TAY ---
 
-async function addToNotebook() {
-    if (!currentWordId) return;
+async function loadNotebookIndex() {
+    const countEl = document.getElementById('nb-count');
     try {
-        const isExisted = await db.notebook.where('wordId').equals(currentWordId).first();
-        if (isExisted) {
-            typeText("từ này đã có trong sổ tay rồi nhé! 🍵");
-            return;
-        }
-        await db.notebook.add({
-            wordId: currentWordId,
-            addedAt: Date.now(),
-            status: 'learning'
-        });
-        typeText("đã thêm vào sổ tay thành công! 🌸");
-        checkNotebookStatus(currentWordId); // Cập nhật trạng thái nút ngay lập tức
-    } catch (error) {
-        console.error(error);
+        const count = await db.notebook.count();
+        if (countEl) countEl.innerText = `${count} từ`;
+    } catch(e) { console.error(e); }
+}
+
+async function loadNotebookFull() {
+    const container = document.getElementById('notebook-list-full');
+    const countEl = document.getElementById('nb-full-count');
+    if (!container) return;
+
+    const savedItems = await db.notebook.orderBy('addedAt').reverse().toArray();
+    if (countEl) countEl.innerText = `${savedItems.length} từ vựng`;
+
+    if (savedItems.length === 0) {
+        container.innerHTML = `<div style="grid-column: span 2; text-align: center; padding: 40px; color: #ccc; font-size: 13px;">sổ tay trống, hãy thêm từ mới nhé! 🌸</div>`;
+        return;
     }
+
+    let html = '';
+    for (const item of savedItems) {
+        const word = await db.words.get(item.wordId);
+        if (word) {
+            html += `
+                <div class="notebook-card" onclick="showWordDetail('${word.id}')" style="cursor:pointer;">
+                    <div class="nb-kanji">${word.kanjiText}</div>
+                    <div class="nb-info">
+                        <div style="font-size: 11px; font-weight: 700; color: #5d4037;">${getHanViet(word.kanjiText)}</div>
+                        <div class="nb-meaning">${word.meanings[0]}</div>
+                    </div>
+                </div>`;
+        }
+    }
+    container.innerHTML = html;
 }
 
 async function checkNotebookStatus(wordId) {
@@ -1215,39 +1233,7 @@ async function loadNotebookFull() {
     container.innerHTML = html;
 }
 
-// --- HÀM CHI TIẾT TỪ (CẬP NHẬT TRẠNG THÁI NÚT) ---
 
-async function showWordDetail(wordId) {
-    document.getElementById('result-container').style.display = 'none';
-    try {
-        const word = await db.words.get(String(wordId));
-        if (!word) return;
-        currentWordId = wordId;
-
-        // Ẩn các thành phần
-        document.getElementById('home-view').style.display = 'none';
-
-        // Đổ dữ liệu
-        document.getElementById('detKanji').innerText = word.kanjiText;
-        document.getElementById('detKana').innerText = word.reading ? `【${word.reading}】` : "";
-        document.getElementById('detHanViet').innerText = getHanViet(word.kanjiText);
-        document.getElementById('detMeaning').innerHTML = word.meanings.map((m, i) => `<div style="margin-bottom:10px;"><b>${i+1}.</b> ${m}</div>`).join('');
-
-        const exEl = document.getElementById('detExample');
-        const exSec = document.getElementById('detExampleSection');
-        if (word.example && word.example !== "undefined") {
-            exEl.innerHTML = String(word.example).replace(/\\n/g, "<br>");
-            exSec.style.display = "block";
-        } else {
-            exSec.style.display = "none";
-        }
-
-        document.getElementById('word-detail-page').style.display = 'block';
-        checkNotebookStatus(wordId); // Kiểm tra xem từ đã lưu chưa để đổi màu nút
-        loadContributions(wordId);
-        window.scrollTo(0, 0);
-    } catch (err) { console.error(err); }
-}
 
 // 3. NẠP DỮ LIỆU (KHÔNG LỌC NGHĨA)
 async function autoLoadData() {
@@ -1359,67 +1345,50 @@ function displayResults(results) {
 }
 
 async function showWordDetail(wordId) {
+    // 1. Dọn dẹp giao diện (Ẩn tất cả các trang nền)
     document.getElementById('result-container').style.display = 'none';
+    document.getElementById('home-view').style.display = 'none';
+    
+    const nbFullPage = document.getElementById('notebook-full-page');
+    if (nbFullPage) nbFullPage.style.display = 'none'; 
+
     try {
+        // 2. Lấy dữ liệu từ database
         const word = await db.words.get(String(wordId));
         if (!word) return;
         currentWordId = wordId;
 
-        // 1. Ẩn các thành phần trang chủ
-        document.querySelector('.bot-container').style.display = 'none';
-        document.querySelector('.search-wrapper').style.display = 'none';
-        document.querySelector('.main-card').style.display = 'none';
-        document.querySelector('.community-card').style.display = 'none';
-        document.getElementById('result-container').style.display = 'none';
-
-        // 2. Đổ dữ liệu vào trang chi tiết
+        // 3. Đổ dữ liệu vào trang chi tiết
         document.getElementById('detKanji').innerText = word.kanjiText;
         document.getElementById('detKana').innerText = word.reading ? `【${word.reading}】` : "";
-        
-        const hv = getHanViet(word.kanjiText);
-        document.getElementById('detHanViet').innerText = hv;
-
+        document.getElementById('detHanViet').innerText = getHanViet(word.kanjiText);
         document.getElementById('detMeaning').innerHTML = word.meanings.map((m, i) => 
             `<div style="margin-bottom:10px;"><b>${i+1}.</b> ${m}</div>`
         ).join('');
 
-       // 3. XỬ LÝ VÍ DỤ (ĐOẠN FIX LỖI)
+        // Xử lý ví dụ
         const exEl = document.getElementById('detExample');
         const exSec = document.getElementById('detExampleSection');
-        
-        // Kiểm tra xem example có tồn tại và không trống không
-        if (word.example && String(word.example).trim() !== "" && word.example !== "undefined") {
-            // Chỉ replace khi có dữ liệu thật
+        if (word.example && word.example !== "undefined" && String(word.example).trim() !== "") {
             exEl.innerHTML = String(word.example).replace(/\\n/g, "<br>").replace(/\n/g, "<br>");
             exSec.style.display = "block";
         } else {
-            // Nếu không có ví dụ, ẩn vùng đó đi nhưng VẪN HIỆN TRANG
             exSec.style.display = "none";
-            exEl.innerHTML = "";
         }
 
-        document.getElementById('detTag').innerText = `Phân loại: ${word.tags || "N/A"}`;
-
-        // 3. Hiện trang chi tiết và cuộn lên đầu
+        // 4. Hiển thị trang chi tiết
         document.getElementById('word-detail-page').style.display = 'block';
-        window.scrollTo(0, 0);
         
-        loadContributions(wordId);
-    } catch (err) { console.error(err); }
-    async function checkNotebookStatus(wordId) {
-    const isExisted = await db.notebook.where('wordId').equals(wordId).first();
-    const btn = document.querySelector('.add-notebook-btn');
-    if (btn) {
-        if (isExisted) {
-            btn.style.backgroundColor = "#888";
-            btn.querySelector('span').innerText = "đã lưu";
-        } else {
-            btn.style.backgroundColor = "var(--muji-red)";
-            btn.querySelector('span').innerText = "sổ tay";
-        }
+        // 5. Các chức năng bổ trợ
+        checkNotebookStatus(wordId); // Đổi màu nút sổ tay (đã lưu hay chưa)
+        loadContributions(wordId);   // Tải góp ý cộng đồng
+        window.scrollTo(0, 0);       // Luôn cuộn lên đầu trang
+        
+    } catch (err) { 
+        console.error("Lỗi showWordDetail:", err); 
     }
 }
-}
+
 async function toggleNotebook() {
     const section = document.getElementById('notebook-section');
     
@@ -1473,14 +1442,14 @@ function closeNotebookPage() {
     document.getElementById('home-view').style.display = 'flex';
 }
 
-// Hàm render danh sách từ vựng trong trang sổ tay
 async function loadNotebookFull() {
     const container = document.getElementById('notebook-list-full');
     const countEl = document.getElementById('nb-full-count');
     if (!container) return;
 
+    // Lấy dữ liệu từ database
     const savedItems = await db.notebook.orderBy('addedAt').reverse().toArray();
-    countEl.innerText = `${savedItems.length} từ vựng`;
+    if (countEl) countEl.innerText = `${savedItems.length} từ vựng`;
 
     if (savedItems.length === 0) {
         container.innerHTML = `<div style="grid-column: span 2; text-align: center; padding: 40px; color: #ccc; font-size: 13px;">sổ tay trống, hãy thêm từ mới nhé! 🌸</div>`;
@@ -1491,41 +1460,21 @@ async function loadNotebookFull() {
     for (const item of savedItems) {
         const word = await db.words.get(item.wordId);
         if (word) {
+            // Chú ý: showWordDetail phải nằm trong onclick
             html += `
-                <div class="notebook-card" onclick="showWordDetailFromNB('${word.id}')" style="background: white; padding: 15px; border-radius: 18px; border: 1px solid #eee; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
-                    <div style="font-size: 22px; font-weight: 800; color: var(--muji-red);">${word.kanjiText}</div>
-                    <div style="overflow: hidden;">
+                <div class="notebook-card" onclick="showWordDetail('${word.id}')" style="cursor: pointer;">
+                    <div class="nb-kanji">${word.kanjiText}</div>
+                    <div class="nb-info">
                         <div style="font-size: 11px; font-weight: 700; color: #5d4037;">${getHanViet(word.kanjiText)}</div>
-                        <div style="font-size: 10px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${word.meanings[0]}</div>
+                        <div class="nb-meaning">${word.meanings[0]}</div>
                     </div>
                 </div>`;
         }
     }
     container.innerHTML = html;
-}
+} // Kết thúc hàm loadNotebookFull tại đây
 
-// Hàm phụ để xem chi tiết từ ngay trong sổ tay
-function showWordDetailFromNB(wordId) {
-    // Chỉ cần gọi hàm showWordDetail cậu đã có, nó sẽ tự đè lên trang sổ tay
-    showWordDetail(wordId);
-}
-    // 2. Duyệt qua từng item để lấy data từ bảng words
-    let html = '';
-    for (const item of savedItems) {
-        const word = await db.words.get(item.wordId);
-        if (word) {
-            html += `
-                <div class="notebook-card" onclick="showWordDetail('${word.id}')" style="background: white; padding: 12px; border-radius: 15px; border: 1px solid #eee; display: flex; align-items: center; gap: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
-                    <div style="font-size: 20px; font-weight: 800; color: var(--muji-red); line-height:1;">${word.kanjiText}</div>
-                    <div style="overflow: hidden;">
-                        <div style="font-size: 10px; font-weight: 700; color: #5d4037; text-transform: lowercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${getHanViet(word.kanjiText)}</div>
-                        <div style="font-size: 9px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${word.meanings[0]}</div>
-                    </div>
-                </div>
-            `;
-        }
-    }
-    container.innerHTML = html;
+
 }
 
 // Gọi hàm này khi load trang
