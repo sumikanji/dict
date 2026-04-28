@@ -92,13 +92,24 @@
         }
 
         /* --- GIỮ NGUYÊN CÁC PHẦN CÒN LẠI CỦA BẠN --- */
-        /* --- CỐ ĐỊNH KHUNG TÌM KIẾM --- */
-        .search-wrapper { 
+       /* Điều chỉnh lại search-wrapper để làm gốc cho menu */
+.search-wrapper { 
     width: 92%; 
     max-width: 480px; 
     background: var(--white); 
     border-radius: 20px; 
     padding: 15px; 
+    border: 1.5px solid rgba(166, 61, 64, 0.3);
+    box-shadow: 0 8px 25px rgba(166, 61, 64, 0.05); 
+    margin: 10px auto; 
+    position: sticky;
+    overflow: visible !important;
+    top: 0;
+    z-index: 999;
+    
+    /* QUAN TRỌNG: Cần dòng này để menu con bám vào */
+    position: relative; 
+
     
     /* --- VIỀN ĐỎ MUJI MẢNH --- */
     border: 1.5px solid rgba(166, 61, 64, 0.3); /* Đỏ Muji với độ mờ 30% để thanh thoát */
@@ -414,7 +425,14 @@
     border: 1px solid var(--gray-border);
     animation: fadeIn 0.4s ease;
 }
-
+/* 3. Khung bên trong chứa nội dung (The inner box - trùng màu nền) */
+.detail-inner-content {
+    background-color: var(--muji-bg); /* Trùng với màu nền trang web */
+    border-radius: 20px;
+    padding: 30px 20px;
+    /* Đường kẻ nét đứt mảnh để tạo ranh giới nhẹ nhàng */
+    border: 1px dashed rgba(166, 61, 64, 0.15); 
+}
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -475,23 +493,50 @@
     transition: 0.2s;
     box-shadow: 0 4px 12px rgba(0,0,0,0.02);
 }
+/* Tùy chỉnh các mục kết quả bên trong */
+.result-item {
+    padding: 15px 18px;
+    /* Đường kẻ nét đứt ngăn cách các từ cho đúng style cậu thích */
+    border-bottom: 1px dashed rgba(166, 61, 64, 0.1); 
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Hiệu ứng khi di chuột hoặc chạm vào: sáng hơn một chút để biết là đang chọn */
+.result-item:hover {
+    background-color: rgba(255, 255, 255, 0.5); 
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.result-item:last-child {
+    border-bottom: none; /* Mục cuối không cần gạch chân */
+}
+
 
 #result-container {
     width: 100%;
-    max-width: 480px;
-    height: 400px;
+    position: absolute;
+    /* Căn tọa độ để nó bắt đầu ngay dưới thanh Search Bar */
+    /* Nếu thanh search bar của cậu cao hơn, hãy tăng số này lên (ví dụ 65px) */
+    top: 60px; 
+    left: 0;
+    z-index: 2000; /* Đảm bảo nó đè lên cả search-tools và thanh kẻ ngang */
+    
+    background-color: var(--muji-bg);
+    max-height: 400px;
     overflow-y: auto;
-    overflow-x: hidden;
-    padding: 10px;
-    background: white; /* Đổi sang nền trắng cho nổi bật khi hiện */
-    border-radius: 20px;
-    border: 1.5px solid var(--gray-border);
-    margin-bottom: 20px;
     
-    /* QUAN TRỌNG: Ẩn ngay từ đầu */
-    display: none; 
+    /* Bo góc và đổ bóng để trông như một chiếc menu đang nổi */
+    border-radius: 0 0 20px 20px;
+    border: 1.5px solid rgba(166, 61, 64, 0.2);
+    border-top: 1px solid #eee; /* Giữ một vạch kẻ mờ ở trên cho đẹp */
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
     
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    display: none; /* Mặc định ẩn */
+    
 }
 
 /* Tùy chỉnh thanh cuộn cho xinh hơn (Muji style) */
@@ -586,6 +631,53 @@
     cursor: pointer;
     font-size: 18px;
 }
+/* Nút gửi đi hình máy bay giấy */
+.btn-send {
+    background: var(--muji-red);
+    color: white;
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+}
+.btn-send:active { transform: scale(0.9); }
+
+/* Cụm Like và Dislike */
+.reaction-bar {
+    display: flex;
+    gap: 15px;
+    margin-top: 8px;
+    border-top: 1px dashed rgba(0,0,0,0.05);
+    padding-top: 8px;
+}
+
+.reaction-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: #999;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.reaction-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+
+.reaction-btn.active-like { color: #2ecc71; }
+.reaction-btn.active-dislike { color: #e74c3c; }
 </style>
     </style>
 </head>
@@ -611,7 +703,7 @@
                 <input type="text" id="searchInput" class="search-input" placeholder="tìm kanji, tiếng anh, nghĩa việt..." onkeypress="executeSearch(event)">
                 <div class="lang-toggle">JA | VI | EN</div>
             </div>
-
+<div id="result-container" style="width: 100%; max-width: 480px; margin-bottom: 20px;"></div>
             <div class="search-tools">
                 <div class="tool-btn" onclick="document.getElementById('imageInput').click()">
                     <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
@@ -637,7 +729,7 @@
         </div>
         
         <div class="content-scroll">
-            <div id="result-container" style="width: 100%; max-width: 480px; margin-bottom: 20px;"></div>
+            
             
     
             
@@ -686,42 +778,51 @@
            
            
         </div>
-    </div> <div id="word-detail-page" style="display: none; width: 100%; max-width: 600px; margin: 20px auto; padding: 20px;">
-        <div class="back-btn" onclick="closeWordDetail()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            QUAY LẠI TÌM KIẾM
-        </div>
+    </div> 
+    <div id="word-detail-page">
+    <div class="back-btn" onclick="closeWordDetail()">← QUAY LẠI TÌM KIẾM</div>
 
-        <div style="background: white; padding: 40px 30px; border-radius: 30px; border: 1px solid var(--gray-border);">
+    <div class="detail-outer-card">
+        
+        <div class="detail-inner-content">
+            
             <div class="detail-header">
-                <div class="detail-kanji" id="detKanji"></div>
-                <div class="detail-reading" id="detKana"></div>
-                <div class="detail-hv" id="detHanViet"></div>
+                <div id="detKanji" style="font-size: 60px; color: var(--muji-red); font-weight: 800;"></div>
+                <div id="detKana" style="font-size: 18px; color: #666; font-weight: 600;"></div>
+                <div id="detHanViet" class="detail-hv"></div>
             </div>
 
             <div class="detail-section">
-                <b>Ý nghĩa</b>
+                <b>Ý NGHĨA</b>
                 <div id="detMeaning" class="detail-text"></div>
             </div>
 
-            <div id="detExampleSection" class="detail-section">
-                <b>Ví dụ & Cách dùng</b>
-                <div id="detExample" class="detail-text detail-example"></div>
+            <div id="detExampleSection" class="detail-section" style="margin-top: 20px;">
+                <b>VÍ DỤ & CÁCH DÙNG</b>
+                <div id="detExample" class="detail-example"></div>
             </div>
 
-            <div class="detail-section">
-                <b>Thông tin thêm</b>
-                <p id="detTag" style="font-size: 13px; color: #888;"></p>
+            <div class="detail-section" style="margin-top: 20px; border-top: 1px dashed rgba(0,0,0,0.05); padding-top: 15px;">
+               <b> Thông tin thêm </b>
+        
+                <p id="detTag" style="font-size: 12px; color: #999; text-align: center;"></p>
             </div>
-            
-            <div class="contribution-section">
-                <div class="contribution-title">Góp ý cộng đồng</div>
+<div class="contribution-section">
+                <div class="contribution-title">Góp ý Nghĩa và cách sử dụng từ vựng </div>
                 <div id="contributionList"></div>
                 <div class="contribution-input-group">
                     <input type="text" id="contributeInput" class="contribution-input" placeholder="Thêm nghĩa...">
-                    <button class="btn-contribute" onclick="addContribution()">+</button>
+                    <button class="btn-send" onclick="addContribution()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+    </button>
                 </div>
             </div>
+        </div> </div> </div>
+            
+            
         </div>
     </div>
 
@@ -886,6 +987,7 @@ function displayResults(results) {
 }
 
 async function showWordDetail(wordId) {
+    document.getElementById('result-container').style.display = 'none';
     try {
         const word = await db.words.get(String(wordId));
         if (!word) return;
@@ -933,7 +1035,49 @@ async function showWordDetail(wordId) {
         loadContributions(wordId);
     } catch (err) { console.error(err); }
 }
+// 1. Cập nhật hiển thị danh sách góp ý
+async function loadContributions(wordId) {
+    const listEl = document.getElementById('contributionList');
+    if (!listEl) return;
 
+    const items = await db.contributions.where('wordId').equals(wordId).toArray();
+    
+    if (items.length === 0) {
+        listEl.innerHTML = `<p style="font-size: 12px; color: #999; text-align: center; padding: 15px;">Chưa có góp ý nào. 🌸</p>`;
+    } else {
+        listEl.innerHTML = items.map(item => `
+            <div class="contribution-item" style="background: rgba(255,255,255,0.6); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(166,61,64,0.05);">
+                <div style="font-size: 13px; color: #333;">${item.content}</div>
+                
+                <div class="reaction-bar">
+                    <button class="reaction-btn" onclick="handleReaction(${item.id}, 'like')">
+                        <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                        <span>${item.likes || 0}</span>
+                    </button>
+                    <button class="reaction-btn" onclick="handleReaction(${item.id}, 'dislike')">
+                        <svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>
+                        <span>${item.dislikes || 0}</span>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+// 2. Hàm xử lý khi bấm Like hoặc Dislike
+async function handleReaction(id, type) {
+    const item = await db.contributions.get(id);
+    if (!item) return;
+
+    if (type === 'like') {
+        item.likes = (item.likes || 0) + 1;
+    } else {
+        item.dislikes = (item.dislikes || 0) + 1;
+    }
+
+    await db.contributions.put(item);
+    loadContributions(currentWordId); // Tải lại danh sách
+}
 // Hàm quay lại trang chủ
 function closeWordDetail() {
     document.getElementById('word-detail-page').style.display = 'none';
@@ -947,20 +1091,31 @@ function closeWordDetail() {
     }
 }
 
+// 2. Hàm thêm góp ý mới
 async function addContribution() {
     const input = document.getElementById('contributeInput');
     const content = input.value.trim();
-    if (!content || !currentWordId) return;
+    
+    if (!content) {
+        typeText("Cậu ơi, nhập nội dung trước khi gửi nhé! 🍵");
+        return;
+    }
+    
+    if (!currentWordId) return;
 
-    await db.contributions.add({
-        wordId: currentWordId,
-        content: content,
-        timestamp: Date.now()
-    });
+    try {
+        await db.contributions.add({
+            wordId: currentWordId,
+            content: content,
+            timestamp: Date.now()
+        });
 
-    input.value = "";
-    loadContributions(currentWordId);
-    typeText("Sumi đã ghi nhận góp ý của cậu! 🌸");
+        input.value = ""; // Xóa ô nhập sau khi gửi
+        await loadContributions(currentWordId); // Tải lại danh sách ngay lập tức
+        typeText("Sumi đã ghi nhận góp ý của cậu! Cảm ơn cậu nhiều nhé! 🌸");
+    } catch (err) {
+        console.error("Lỗi gửi góp ý:", err);
+    }
 }
 
 // 8. TIỆN ÍCH KHÁC
@@ -1018,6 +1173,16 @@ document.getElementById('searchInput').oninput = () => {
 function clearHistory() { localStorage.removeItem('sumi_history'); displayHistory(); }
 function closePopup() { document.getElementById('resultPopup').style.display = 'none'; }
 function toggleSupport() { document.getElementById('chatWindow').classList.toggle('active'); }
+// Thêm đoạn này vào cuối Script của cậu
+document.addEventListener('click', function(e) {
+    const searchWrapper = document.querySelector('.search-wrapper');
+    const container = document.getElementById('result-container');
+    
+    // Nếu kích chuột ra ngoài vùng tìm kiếm, ẩn menu đi
+    if (searchWrapper && !searchWrapper.contains(e.target)) {
+        container.style.display = 'none';
+    }
+});
 </script>
 </script>
 <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="processImage(event)">
