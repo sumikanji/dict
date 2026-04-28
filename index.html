@@ -226,16 +226,12 @@
         border-top: 6px solid #a63d40;
     }
 
-    @media (max-width: 600px) {
-        .sumi-support-fixed { bottom: 20px; right: 20px; }
-        .support-icon { width: 55px; height: 55px; }
-        .detail-outer-card {
-        max-width: 100%;
-        padding: 0; /* Mobile sát rạt lề luôn */
-        .back-btn {
-        padding-top: env(safe-area-inset-top, 25px); /* Tránh camera/giờ trên điện thoại */
+   @media (max-width: 600px) {
+    .detail-action-bar {
+        padding-top: calc(env(safe-area-inset-top, 20px) + 5px);
     }
-    }
+
+    
     
     .detail-middle-layer {
         border-radius: 0 0 25px 25px; /* Chỉ bo góc dưới, đỉnh sát mép */
@@ -789,14 +785,16 @@
 .reaction-btn.active-like { color: #2ecc71; }
 .reaction-btn.active-dislike { color: #e74c3c; }
 
+/* Thanh chứa điều khiển việc xếp hàng */
 .detail-action-bar {
-    width: 100%; 
-    display: flex !important; /* Ép kiểu Flexbox */
-    flex-direction: row;
-    justify-content: space-between; /* Lệnh then chốt để đẩy nút ra 2 đầu */
-    align-items: center;
-    padding: 10px 15px; /* Khoảng cách với 2 mép khung */
+    width: 100%;
+    display: flex !important;
+    justify-content: space-between; /* Đẩy 2 nút về 2 đầu */
+    align-items: center;           /* Căn giữa theo chiều dọc - GIẢI QUYẾT LỖI CAO THẤP */
+    padding: 15px 20px;
     box-sizing: border-box;
+    /* Tránh tai thỏ trên điện thoại */
+    margin-top: env(safe-area-inset-top, 0px); 
 }
 
 /* Kiểu dáng chung cho cả 2 nút */
@@ -933,23 +931,22 @@
                 </div>
 
                 <div class="utility-grid">
-        <div class="grid-item">
-            <div class="icon-box"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></div>
-            <div class="grid-label">Sổ tay</div>
-        </div>
+       <div class="grid-item" onclick="openNotebookPage()">
+    <div class="icon-box"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></div>
+    <div class="grid-label">Sổ tay</div>
+</div>
         <div class="grid-item"><div class="icon-box"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div><div class="grid-label">Đọc</div></div>
         <div class="grid-item"><div class="icon-box"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path></svg></div><div class="grid-label">Nghe</div></div>
         <div class="grid-item"><div class="icon-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></div><div class="grid-label">Khác</div></div>
     </div>
 
-    <div id="notebook-section" style="padding: 15px; border-top: 1px solid #f0f0f0;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <span style="font-size: 11px; font-weight: 800; color: #5d4037; text-transform: uppercase;">Sổ tay ôn tập</span>
-            <span id="nb-count" style="font-size: 10px; color: #bbb;">0 từ</span>
-        </div>
-        
-        <div id="notebook-list-index"></div>
+    <div id="notebook-section" style="display: none; padding: 15px; border-top: 1px solid #f0f0f0; background: #fafafa;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <span style="font-size: 11px; font-weight: 800; color: #5d4037; text-transform: uppercase;">danh sách ôn tập</span>
+        <span id="nb-count" style="font-size: 10px; color: #bbb;">0 từ</span>
     </div>
+    <div id="notebook-list-index"></div>
+</div>
             </div>
 
             <div class="community-card">
@@ -978,13 +975,23 @@
     
 
     <div class="detail-outer-card">
-        <div class="back-btn" onclick="closeWordDetail()">← QUAY LẠI TÌM KIẾM</div>
-        <div class="add-notebook-btn" onclick="addToNotebook()">
+       <div class="detail-action-bar">
+    <button class="back-btn" onclick="closeWordDetail()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>quay lại</span>
+    </button>
+
+    <button class="add-notebook-btn" onclick="addToNotebook()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
         </svg>
         <span>sổ tay</span>
-    </div>
+    </button>
+</div>
+    
         <div class="detail-inner-content">
             
             <div class="detail-header">
@@ -1028,7 +1035,28 @@
             
         </div>
     </div>
+<div id="notebook-full-page" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background-color: #f0f0f0; z-index: 9999; overflow-y: auto;">
+    <div class="detail-outer-card">
+        <div class="back-btn" onclick="closeNotebookPage()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>quay lại trang chủ</span>
+        </div>
 
+        <div class="detail-middle-layer">
+            <div class="detail-inner-content" style="min-height: 80vh;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1.5px dashed rgba(93, 64, 55, 0.2); padding-bottom: 15px;">
+                    <span style="font-size: 14px; font-weight: 800; color: #5d4037; text-transform: uppercase;">sổ tay của tôi</span>
+                    <span id="nb-full-count" style="font-size: 11px; color: #bbb;">0 từ vựng</span>
+                </div>
+                
+                <div id="notebook-list-full" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
     <div class="sumi-support-wrapper">
         <div class="chat-window" id="chatWindow">
             <div class="chat-header">
@@ -1056,19 +1084,18 @@
                 <p>© 2026 sumi dict. bảo lưu mọi quyền.</p>
             </footer>
    <script>
-   // ==========================================
+  // ==========================================
 // 1. CẤU HÌNH CƠ SỞ DỮ LIỆU
 const db = new Dexie("SumiAutoDB");
 db.version(2).stores({
     words: "id, *searchTerms",
-    contributions: "++id, wordId, content, timestamp", // Bảng lưu góp ý
-    // Bảng sổ tay cậu đã tạo
+    contributions: "++id, wordId, content, timestamp",
     notebook: "++id, wordId, addedAt, status"
 });
 
 let dictionaryData = []; 
 let typingTimer = null;
-let currentWordId = null; // Lưu ID từ đang xem
+let currentWordId = null; 
 
 // 2. KÍCH HOẠT HỆ THỐNG
 window.addEventListener('load', async () => {
@@ -1077,10 +1104,150 @@ window.addEventListener('load', async () => {
     if (count === 0) {
         autoLoadData(); 
     } else {
-        typeText(`Sumi đã sẵn sàng tra cứu ${count.toLocaleString()} từ vựng! 🍵`);
+        typeText(`sumi đã sẵn sàng tra cứu ${count.toLocaleString()} từ vựng! 🍵`);
     }
     initKanjiBank();
+    loadNotebookIndex(); // Tải dữ liệu sổ tay trang chủ
 });
+
+// --- CÁC HÀM QUẢN LÝ TRANG (VIEW) ---
+
+function openNotebookPage() {
+    document.getElementById('home-view').style.display = 'none';
+    document.getElementById('word-detail-page').style.display = 'none';
+    document.getElementById('notebook-full-page').style.display = 'block';
+    loadNotebookFull();
+    window.scrollTo(0, 0);
+    typeText("cùng ôn tập lại các từ đã lưu nào! 🍵");
+}
+
+function closeNotebookPage() {
+    document.getElementById('notebook-full-page').style.display = 'none';
+    document.getElementById('home-view').style.display = 'flex';
+}
+
+function closeWordDetail() {
+    document.getElementById('word-detail-page').style.display = 'none';
+    
+    // Kiểm tra xem nên quay về trang nào
+    const nbPage = document.getElementById('notebook-full-page');
+    if (nbPage.style.display === 'block') {
+        // Vẫn ở trang sổ tay, không làm gì thêm
+    } else {
+        document.getElementById('home-view').style.display = 'flex';
+        document.querySelector('.bot-container').style.display = 'flex';
+        document.querySelector('.search-wrapper').style.display = 'block';
+        document.querySelector('.main-card').style.display = 'block';
+        document.querySelector('.community-card').style.display = 'block';
+    }
+    loadNotebookIndex(); // Cập nhật lại số lượng ở trang chủ
+}
+
+// --- CÁC HÀM XỬ LÝ DỮ LIỆU SỔ TAY ---
+
+async function addToNotebook() {
+    if (!currentWordId) return;
+    try {
+        const isExisted = await db.notebook.where('wordId').equals(currentWordId).first();
+        if (isExisted) {
+            typeText("từ này đã có trong sổ tay rồi nhé! 🍵");
+            return;
+        }
+        await db.notebook.add({
+            wordId: currentWordId,
+            addedAt: Date.now(),
+            status: 'learning'
+        });
+        typeText("đã thêm vào sổ tay thành công! 🌸");
+        checkNotebookStatus(currentWordId); // Cập nhật trạng thái nút ngay lập tức
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function checkNotebookStatus(wordId) {
+    const isExisted = await db.notebook.where('wordId').equals(wordId).first();
+    const btn = document.querySelector('.add-notebook-btn');
+    if (btn) {
+        if (isExisted) {
+            btn.style.backgroundColor = "#888";
+            btn.querySelector('span').innerText = "đã lưu";
+        } else {
+            btn.style.backgroundColor = "var(--muji-red)";
+            btn.querySelector('span').innerText = "sổ tay";
+        }
+    }
+}
+
+async function loadNotebookIndex() {
+    const countEl = document.getElementById('nb-count');
+    const count = await db.notebook.count();
+    if (countEl) countEl.innerText = `${count} từ`;
+}
+
+async function loadNotebookFull() {
+    const container = document.getElementById('notebook-list-full');
+    const countEl = document.getElementById('nb-full-count');
+    if (!container) return;
+
+    const savedItems = await db.notebook.orderBy('addedAt').reverse().toArray();
+    countEl.innerText = `${savedItems.length} từ vựng`;
+
+    if (savedItems.length === 0) {
+        container.innerHTML = `<div style="grid-column: span 2; text-align: center; padding: 40px; color: #ccc; font-size: 13px;">sổ tay trống, hãy thêm từ mới nhé! 🌸</div>`;
+        return;
+    }
+
+    let html = '';
+    for (const item of savedItems) {
+        const word = await db.words.get(item.wordId);
+        if (word) {
+            html += `
+                <div class="notebook-card" onclick="showWordDetail('${word.id}')">
+                    <div class="nb-kanji">${word.kanjiText}</div>
+                    <div class="nb-info">
+                        <div style="font-size: 11px; font-weight: 700; color: #5d4037;">${getHanViet(word.kanjiText)}</div>
+                        <div class="nb-meaning">${word.meanings[0]}</div>
+                    </div>
+                </div>`;
+        }
+    }
+    container.innerHTML = html;
+}
+
+// --- HÀM CHI TIẾT TỪ (CẬP NHẬT TRẠNG THÁI NÚT) ---
+
+async function showWordDetail(wordId) {
+    document.getElementById('result-container').style.display = 'none';
+    try {
+        const word = await db.words.get(String(wordId));
+        if (!word) return;
+        currentWordId = wordId;
+
+        // Ẩn các thành phần
+        document.getElementById('home-view').style.display = 'none';
+
+        // Đổ dữ liệu
+        document.getElementById('detKanji').innerText = word.kanjiText;
+        document.getElementById('detKana').innerText = word.reading ? `【${word.reading}】` : "";
+        document.getElementById('detHanViet').innerText = getHanViet(word.kanjiText);
+        document.getElementById('detMeaning').innerHTML = word.meanings.map((m, i) => `<div style="margin-bottom:10px;"><b>${i+1}.</b> ${m}</div>`).join('');
+
+        const exEl = document.getElementById('detExample');
+        const exSec = document.getElementById('detExampleSection');
+        if (word.example && word.example !== "undefined") {
+            exEl.innerHTML = String(word.example).replace(/\\n/g, "<br>");
+            exSec.style.display = "block";
+        } else {
+            exSec.style.display = "none";
+        }
+
+        document.getElementById('word-detail-page').style.display = 'block';
+        checkNotebookStatus(wordId); // Kiểm tra xem từ đã lưu chưa để đổi màu nút
+        loadContributions(wordId);
+        window.scrollTo(0, 0);
+    } catch (err) { console.error(err); }
+}
 
 // 3. NẠP DỮ LIỆU (KHÔNG LỌC NGHĨA)
 async function autoLoadData() {
@@ -1253,6 +1420,23 @@ async function showWordDetail(wordId) {
     }
 }
 }
+async function toggleNotebook() {
+    const section = document.getElementById('notebook-section');
+    
+    // Nếu đang đóng thì mở ra và load dữ liệu
+    if (section.style.display === 'none') {
+        await loadNotebookIndex(); // Đảm bảo dữ liệu mới nhất được load
+        section.style.display = 'block';
+        
+        // Hiệu ứng cuộn nhẹ xuống để người dùng thấy danh sách
+        section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        
+        typeText("đây là những từ cậu đã lưu nhé! 🌸");
+    } else {
+        // Nếu đang mở thì đóng lại
+        section.style.display = 'none';
+    }
+}
 // Hàm tải dữ liệu từ sổ tay ra trang chủ
 async function loadNotebookIndex() {
     const container = document.getElementById('notebook-list-index');
@@ -1268,7 +1452,63 @@ async function loadNotebookIndex() {
         container.innerHTML = `<div style="grid-column: span 2; text-align: center; padding: 20px; color: #ccc; font-size: 12px;">chưa có từ nào trong sổ tay. 🌸</div>`;
         return;
     }
+// Hàm mở trang sổ tay toàn màn hình
+async function openNotebookPage() {
+    // 1. Ẩn trang chủ
+    document.getElementById('home-view').style.display = 'none';
+    // 2. Hiện trang sổ tay
+    const notebookPage = document.getElementById('notebook-full-page');
+    notebookPage.style.display = 'block';
+    
+    // 3. Tải dữ liệu
+    await loadNotebookFull();
+    
+    window.scrollTo(0, 0);
+    typeText("cùng ôn tập lại các từ đã lưu nào! 🍵");
+}
 
+// Hàm đóng trang sổ tay
+function closeNotebookPage() {
+    document.getElementById('notebook-full-page').style.display = 'none';
+    document.getElementById('home-view').style.display = 'flex';
+}
+
+// Hàm render danh sách từ vựng trong trang sổ tay
+async function loadNotebookFull() {
+    const container = document.getElementById('notebook-list-full');
+    const countEl = document.getElementById('nb-full-count');
+    if (!container) return;
+
+    const savedItems = await db.notebook.orderBy('addedAt').reverse().toArray();
+    countEl.innerText = `${savedItems.length} từ vựng`;
+
+    if (savedItems.length === 0) {
+        container.innerHTML = `<div style="grid-column: span 2; text-align: center; padding: 40px; color: #ccc; font-size: 13px;">sổ tay trống, hãy thêm từ mới nhé! 🌸</div>`;
+        return;
+    }
+
+    let html = '';
+    for (const item of savedItems) {
+        const word = await db.words.get(item.wordId);
+        if (word) {
+            html += `
+                <div class="notebook-card" onclick="showWordDetailFromNB('${word.id}')" style="background: white; padding: 15px; border-radius: 18px; border: 1px solid #eee; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+                    <div style="font-size: 22px; font-weight: 800; color: var(--muji-red);">${word.kanjiText}</div>
+                    <div style="overflow: hidden;">
+                        <div style="font-size: 11px; font-weight: 700; color: #5d4037;">${getHanViet(word.kanjiText)}</div>
+                        <div style="font-size: 10px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${word.meanings[0]}</div>
+                    </div>
+                </div>`;
+        }
+    }
+    container.innerHTML = html;
+}
+
+// Hàm phụ để xem chi tiết từ ngay trong sổ tay
+function showWordDetailFromNB(wordId) {
+    // Chỉ cần gọi hàm showWordDetail cậu đã có, nó sẽ tự đè lên trang sổ tay
+    showWordDetail(wordId);
+}
     // 2. Duyệt qua từng item để lấy data từ bảng words
     let html = '';
     for (const item of savedItems) {
@@ -1336,6 +1576,14 @@ async function handleReaction(id, type) {
 // Hàm quay lại trang chủ
 function closeWordDetail() {
     document.getElementById('word-detail-page').style.display = 'none';
+    // Nếu trang sổ tay đang mở thì không hiện lại home-view
+    const notebookPage = document.getElementById('notebook-full-page');
+    if (notebookPage.style.display === 'block') {
+        // Vẫn ở trang sổ tay
+    } else {
+        document.getElementById('home-view').style.display = 'flex';
+    }
+
     document.querySelector('.bot-container').style.display = 'flex';
     document.querySelector('.search-wrapper').style.display = 'block';
     document.querySelector('.main-card').style.display = 'block';
