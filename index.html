@@ -229,6 +229,19 @@
     @media (max-width: 600px) {
         .sumi-support-fixed { bottom: 20px; right: 20px; }
         .support-icon { width: 55px; height: 55px; }
+        .detail-outer-card {
+        max-width: 100%;
+        padding: 0; /* Mobile sát rạt lề luôn */
+        .back-btn {
+        padding-top: env(safe-area-inset-top, 25px); /* Tránh camera/giờ trên điện thoại */
+    }
+    }
+    
+    .detail-middle-layer {
+        border-radius: 0 0 25px 25px; /* Chỉ bo góc dưới, đỉnh sát mép */
+        margin-bottom: 0;
+    }
+
     }
     /* --- CSS CHO SUMI SUPPORT --- */
 .sumi-support-fixed { 
@@ -418,18 +431,37 @@
     backdrop-filter: blur(3px);
 }
 
-/* Giao diện trang chi tiết từ vựng */
 #word-detail-page {
-    display: none; /* Ẩn mặc định */
-    
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    max-width: 600px;
-    margin: 0px auto;
-    background: white;
-    padding: 40px 30px;
-    border-radius: 30px;
-    border: 1px solid var(--gray-border);
-    animation: fadeIn 0.4s ease;
+    height: 100vh;
+    background-color: #f0f0f0; /* Nền xám bao quanh */
+    z-index: 9999;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+/* KHUNG NGOÀI: Tự co lại trên PC, bung ra trên Mobile */
+.detail-outer-card {
+    background-color: #f0f0f0;
+    width: 100%;
+    max-width: 600px; /* Độ rộng lý tưởng để học trên PC */
+    margin: 0 auto;   /* Căn giữa khung trên màn hình PC */
+    min-height: 100vh;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* LỚP TRẮNG NỔI KHỐI */
+.detail-middle-layer {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    margin-bottom: 20px; /* Khoảng cách dưới chân */
 }
 /* 2. Khung bên trong (Vẫn giữ màu kem để làm nổi bật nội dung) */
 .detail-inner-content {
@@ -457,9 +489,14 @@
 .detail-example { background: var(--gray-light); padding: 20px; border-radius: 15px; font-style: italic; border-left: 4px solid var(--muji-red); }
 
 .back-btn {
-    display: inline-flex; align-items: center; gap: 8px; color: #999;
-    cursor: pointer; font-weight: 700; font-size: 13px; margin-bottom: 20px;
-    transition: 0.3s;
+    padding: 20px;
+    font-size: 13px;
+    color: #888;
+    cursor: pointer;
+    text-transform: lowercase;
+    display: block;
+    max-width: 500px;
+    margin: 0 auto; /* Căn giữa nút cùng với khung trên PC */
 }
 .back-btn:hover { color: var(--muji-red); }
 .search-btn {
@@ -833,7 +870,7 @@
         <div class="detail-inner-content">
             
             <div class="detail-header">
-                <div id="detKanji" style="font-size: 60px; color: var(--muji-red); font-weight: 800;"></div>
+                <div id="detKanji" style="font-size: 40px; color: var(--muji-red); font-weight: 800;"></div>
                 <div id="detKana" style="font-size: 18px; color: #666; font-weight: 600;"></div>
                 <div id="detHanViet" class="detail-hv"></div>
             </div>
