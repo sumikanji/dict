@@ -226,9 +226,12 @@
         border-top: 6px solid #a63d40;
     }
 
-   @media (max-width: 600px) {
+   /* Điều chỉnh riêng cho Mobile để không bị dính tai thỏ nhưng vẫn hẹp */
+@media (max-width: 600px) {
     .detail-action-bar {
-        padding-top: calc(env(safe-area-inset-top, 20px) + 5px);
+        /* Chỉ thêm một chút khoảng trống phía trên cho Safe Area */
+        padding-top: calc(env(safe-area-inset-top, 10px) + 5px);
+        padding-bottom: 5px; /* Giảm khoảng cách dưới nút */
     }
 
     
@@ -785,16 +788,18 @@
 .reaction-btn.active-like { color: #2ecc71; }
 .reaction-btn.active-dislike { color: #e74c3c; }
 
-/* Thanh chứa điều khiển việc xếp hàng */
 .detail-action-bar {
     width: 100%;
     display: flex !important;
-    justify-content: space-between; /* Đẩy 2 nút về 2 đầu */
-    align-items: center;           /* Căn giữa theo chiều dọc - GIẢI QUYẾT LỖI CAO THẤP */
-    padding: 15px 20px;
+    justify-content: space-between;
+    align-items: center;
+    
+    /* GIẢM PADDING: Thu hẹp khoảng cách trên và dưới */
+    padding: 8px 15px; 
+    
     box-sizing: border-box;
-    /* Tránh tai thỏ trên điện thoại */
-    margin-top: env(safe-area-inset-top, 0px); 
+    /* Loại bỏ margin nếu có để sát khít hơn */
+    margin: 0; 
 }
 
 /* Kiểu dáng chung cho cả 2 nút */
