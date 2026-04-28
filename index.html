@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sumi Dict - Fixed Bot UI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
@@ -19,6 +20,10 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
+            margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
             font-family: 'Be Vietnam Pro', sans-serif;
             background-color: var(--muji-bg);
             padding: 0;
@@ -416,31 +421,26 @@
 /* Giao diện trang chi tiết từ vựng */
 #word-detail-page {
     display: none; /* Ẩn mặc định */
+    
     width: 100%;
     max-width: 600px;
     margin: 0px auto;
     background: white;
-    padding: 10px; /* Khoảng cách nhỏ với mép màn hình điện thoại */
-    box-sizing: border-box; /* Quan trọng: Giữ padding nằm TRONG width 100% */
+    padding: 40px 30px;
     border-radius: 30px;
     border: 1px solid var(--gray-border);
     animation: fadeIn 0.4s ease;
 }
-
-/* 3. Khung bên trong chứa nội dung (The inner box - trùng màu nền) */
+/* 2. Khung bên trong (Vẫn giữ màu kem để làm nổi bật nội dung) */
 .detail-inner-content {
-    background-color: white;/* Trùng với màu nền trang web */
+    background-color: var(--muji-bg); /* Màu kem đặc trưng */
     border-radius: 20px;
     padding: 30px 20px;
-    /* Đường kẻ nét đứt mảnh để tạo ranh giới nhẹ nhàng */
-    border: 1px dashed rgba(166, 61, 64, 0.15); 
-}
-/* 5. Ép các ảnh hoặc phần tử lớn không được tràn khung */
-.detail-inner-content * {
-    max-width: 100%;
+    border: 1.5px dashed rgba(166, 61, 64, 0.1); /* Nét đứt nhẹ */
+    width: 100%;
     box-sizing: border-box;
-    word-wrap: break-word; /* Tự xuống dòng nếu từ quá dài */
 }
+
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 .detail-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--muji-red); padding-bottom: 20px; }
