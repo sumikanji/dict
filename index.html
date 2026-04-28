@@ -465,14 +465,14 @@
 }
 /* 2. Khung bên trong (Vẫn giữ màu kem để làm nổi bật nội dung) */
 .detail-inner-content {
-    background-color: var(--muji-bg); /* Màu kem đặc trưng */
+    background-color: #ffffff;/* Màu kem đặc trưng */
     border-radius: 20px;
     padding: 30px 20px;
-    border: 1.5px dashed rgba(166, 61, 64, 0.1); /* Nét đứt nhẹ */
+    
     width: 100%;
     box-sizing: border-box;
     /* Bóng đổ bên trong màu xám nhẹ như cậu muốn trước đó */
-    box-shadow: inset 0 3px 8px rgba(0,0,0,0.04);
+    
     
 }
 
@@ -488,15 +488,42 @@
 .detail-text { font-size: 16px; line-height: 1.8; color: var(--muji-text); }
 .detail-example { background: var(--gray-light); padding: 20px; border-radius: 15px; font-style: italic; border-left: 4px solid var(--muji-red); }
 
+/* Wrapper giúp nút không bao giờ vượt quá khung PC */
+.back-btn-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start; /* Luôn nằm bên trái */
+    padding: 10px 0 15px 5px;   /* Tạo khoảng trống nhẹ với mép khung */
+    box-sizing: border-box;
+}
 .back-btn {
-    padding: 20px;
+    /* 1. Định dạng khung nút */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    margin: 20px 0 15px 15px; /* Khoảng cách lề trên và trái */
+    
+    /* 2. Màu sắc (Sử dụng màu gỗ trầm cậu thích) */
+    background-color: var(--muji-red);
+    color: #fdfaf5 !important; /* Chữ màu kem nổi bật */
+    
+    /* 3. Hình dáng */
+    border-radius: 50px; /* Bo tròn trịa dạng viên thuốc */
     font-size: 13px;
-    color: #888;
-    cursor: pointer;
+    font-weight: 600;
     text-transform: lowercase;
-    display: block;
-    max-width: 500px;
-    margin: 0 auto; /* Căn giữa nút cùng với khung trên PC */
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    
+   
+}
+
+/* Hiệu ứng khi chạm/di chuột */
+.back-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 6px rgba(93, 64, 55, 0.2);
 }
 .back-btn:hover { color: var(--muji-red); }
 .search-btn {
@@ -636,7 +663,7 @@
 .contribution-section {
     margin-top: 35px;
     padding: 25px 20px;
-    background-color: #ffffff; /* Màu trắng tinh */
+    background-color: var(--muji-bg); 
     border-radius: 20px;
     
     /* Viền mảnh màu xám nhạt để định hình trên nền kem */
@@ -670,7 +697,7 @@
 /* Các mục góp ý có bóng đỏ nhẹ tỏa ra 4 bên */
 /* Các mục góp ý có hiệu ứng khắc chìm (Inset) */
 .contribution-item {
-    background: #ffffff !important;
+    background: var(--muji-bg); 
     padding: 18px;
     border-radius: 15px;
     margin-bottom: 15px;
@@ -761,6 +788,79 @@
 
 .reaction-btn.active-like { color: #2ecc71; }
 .reaction-btn.active-dislike { color: #e74c3c; }
+
+.detail-action-bar {
+    width: 100%; 
+    display: flex !important; /* Ép kiểu Flexbox */
+    flex-direction: row;
+    justify-content: space-between; /* Lệnh then chốt để đẩy nút ra 2 đầu */
+    align-items: center;
+    padding: 10px 15px; /* Khoảng cách với 2 mép khung */
+    box-sizing: border-box;
+}
+
+/* Kiểu dáng chung cho cả 2 nút */
+.back-btn, .add-notebook-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: lowercase;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+/* Nút sổ tay (Màu đỏ Muji) */
+.add-notebook-btn {
+    background-color: var(--muji-red);
+    color: #ffffff !important;
+    box-shadow: 0 4px 10px rgba(166, 61, 64, 0.15);
+}
+#notebook-list-index {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Chia 2 cột trên mobile */
+    gap: 10px;
+    width: 100%;
+}
+
+.notebook-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    cursor: pointer;
+    overflow: hidden; /* Tránh tràn chữ */
+}
+
+/* Chỉnh Kanji trong thẻ nhỏ */
+.nb-kanji {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--muji-red);
+    flex-shrink: 0;
+}
+
+/* Chỉnh phần chữ bên cạnh */
+.nb-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Để text-overflow hoạt động */
+}
+
+.nb-meaning {
+    font-size: 10px;
+    color: #888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 </style>
     </style>
 </head>
@@ -833,11 +933,23 @@
                 </div>
 
                 <div class="utility-grid">
-                    <div class="grid-item"><div class="icon-box"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></div><div class="grid-label">Sổ tay</div></div>
-                    <div class="grid-item"><div class="icon-box"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div><div class="grid-label">Đọc</div></div>
-                    <div class="grid-item"><div class="icon-box"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path></svg></div><div class="grid-label">Nghe</div></div>
-                    <div class="grid-item"><div class="icon-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></div><div class="grid-label">Khác</div></div>
-                </div>
+        <div class="grid-item">
+            <div class="icon-box"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></div>
+            <div class="grid-label">Sổ tay</div>
+        </div>
+        <div class="grid-item"><div class="icon-box"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div><div class="grid-label">Đọc</div></div>
+        <div class="grid-item"><div class="icon-box"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path></svg></div><div class="grid-label">Nghe</div></div>
+        <div class="grid-item"><div class="icon-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></div><div class="grid-label">Khác</div></div>
+    </div>
+
+    <div id="notebook-section" style="padding: 15px; border-top: 1px solid #f0f0f0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <span style="font-size: 11px; font-weight: 800; color: #5d4037; text-transform: uppercase;">Sổ tay ôn tập</span>
+            <span id="nb-count" style="font-size: 10px; color: #bbb;">0 từ</span>
+        </div>
+        
+        <div id="notebook-list-index"></div>
+    </div>
             </div>
 
             <div class="community-card">
@@ -863,10 +975,16 @@
         </div>
     </div> 
     <div id="word-detail-page">
-    <div class="back-btn" onclick="closeWordDetail()">← QUAY LẠI TÌM KIẾM</div>
+    
 
     <div class="detail-outer-card">
-        
+        <div class="back-btn" onclick="closeWordDetail()">← QUAY LẠI TÌM KIẾM</div>
+        <div class="add-notebook-btn" onclick="addToNotebook()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>sổ tay</span>
+    </div>
         <div class="detail-inner-content">
             
             <div class="detail-header">
@@ -943,7 +1061,9 @@
 const db = new Dexie("SumiAutoDB");
 db.version(2).stores({
     words: "id, *searchTerms",
-    contributions: "++id, wordId, content, timestamp" // Bảng lưu góp ý
+    contributions: "++id, wordId, content, timestamp", // Bảng lưu góp ý
+    // Bảng sổ tay cậu đã tạo
+    notebook: "++id, wordId, addedAt, status"
 });
 
 let dictionaryData = []; 
@@ -1119,7 +1239,57 @@ async function showWordDetail(wordId) {
         
         loadContributions(wordId);
     } catch (err) { console.error(err); }
+    async function checkNotebookStatus(wordId) {
+    const isExisted = await db.notebook.where('wordId').equals(wordId).first();
+    const btn = document.querySelector('.add-notebook-btn');
+    if (btn) {
+        if (isExisted) {
+            btn.style.backgroundColor = "#888";
+            btn.querySelector('span').innerText = "đã lưu";
+        } else {
+            btn.style.backgroundColor = "var(--muji-red)";
+            btn.querySelector('span').innerText = "sổ tay";
+        }
+    }
 }
+}
+// Hàm tải dữ liệu từ sổ tay ra trang chủ
+async function loadNotebookIndex() {
+    const container = document.getElementById('notebook-list-index');
+    const countEl = document.getElementById('nb-count');
+    if (!container) return;
+
+    // 1. Lấy tất cả Id từ sổ tay (sắp xếp mới nhất lên đầu)
+    const savedItems = await db.notebook.orderBy('addedAt').reverse().toArray();
+    
+    if (countEl) countEl.innerText = `${savedItems.length} từ`;
+
+    if (savedItems.length === 0) {
+        container.innerHTML = `<div style="grid-column: span 2; text-align: center; padding: 20px; color: #ccc; font-size: 12px;">chưa có từ nào trong sổ tay. 🌸</div>`;
+        return;
+    }
+
+    // 2. Duyệt qua từng item để lấy data từ bảng words
+    let html = '';
+    for (const item of savedItems) {
+        const word = await db.words.get(item.wordId);
+        if (word) {
+            html += `
+                <div class="notebook-card" onclick="showWordDetail('${word.id}')" style="background: white; padding: 12px; border-radius: 15px; border: 1px solid #eee; display: flex; align-items: center; gap: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="font-size: 20px; font-weight: 800; color: var(--muji-red); line-height:1;">${word.kanjiText}</div>
+                    <div style="overflow: hidden;">
+                        <div style="font-size: 10px; font-weight: 700; color: #5d4037; text-transform: lowercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${getHanViet(word.kanjiText)}</div>
+                        <div style="font-size: 9px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${word.meanings[0]}</div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    container.innerHTML = html;
+}
+
+// Gọi hàm này khi load trang
+window.addEventListener('load', loadNotebookIndex);
 // 1. Cập nhật hiển thị danh sách góp ý
 async function loadContributions(wordId) {
     const listEl = document.getElementById('contributionList');
@@ -1170,6 +1340,8 @@ function closeWordDetail() {
     document.querySelector('.search-wrapper').style.display = 'block';
     document.querySelector('.main-card').style.display = 'block';
     document.querySelector('.community-card').style.display = 'block';
+    // THÊM DÒNG NÀY: Cập nhật lại sổ tay ở trang chủ
+    loadNotebookIndex();
     // Hiện lại kết quả nếu đang tìm kiếm
     if (document.getElementById('searchInput').value.trim() !== "") {
         document.getElementById('result-container').style.display = 'block';
@@ -1202,7 +1374,42 @@ async function addContribution() {
         console.error("Lỗi gửi góp ý:", err);
     }
 }
+async function addToNotebook() {
+    // 1. Kiểm tra xem có từ nào đang mở không
+    if (!currentWordId) return;
+    
+    try {
+        // 2. Kiểm tra xem từ này đã tồn tại trong sổ tay chưa (dùng wordId để tra)
+        const isExisted = await db.notebook.where('wordId').equals(currentWordId).first();
+        
+        if (isExisted) {
+            typeText("từ này đã có trong sổ tay của cậu rồi nhé! 🍵");
+            // Hiệu ứng rung nhẹ nút nếu đã có (tùy chọn)
+            return;
+        }
 
+        // 3. Nếu chưa có, tiến hành thêm mới vào sổ tay đã tạo
+        await db.notebook.add({
+            wordId: currentWordId,
+            addedAt: Date.now(),
+            status: 'learning', // Gán trạng thái đang học
+            reviewCount: 0      // Số lần đã ôn tập
+        });
+
+        // 4. Thông báo và đổi trạng thái nút
+        typeText("đã thêm vào sổ tay ôn tập thành công! chăm chỉ nhé 🌸");
+        
+        const btn = document.querySelector('.add-notebook-btn');
+        if (btn) {
+            btn.style.backgroundColor = "#888"; // Đổi sang màu xám để báo hiệu đã xong
+            btn.querySelector('span').innerText = "đã lưu";
+        }
+        
+    } catch (error) {
+        console.error("Lỗi khi lưu sổ tay:", error);
+        typeText("có lỗi xảy ra khi lưu vào sổ tay rồi cậu ơi...");
+    }
+}
 // 8. TIỆN ÍCH KHÁC
 async function initKanjiBank() {
     try {
