@@ -962,7 +962,7 @@
                     </svg>
                 </button>
                 <input type="text" id="searchInput" class="search-input" placeholder="tìm kanji, tiếng anh, nghĩa việt..." onkeypress="executeSearch(event)">
-                <div class="lang-toggle">JA | VI | EN</div>
+                <div class="lang-toggle">JA | VI </div>
             </div>
 <div id="result-container" style="width: 100%; max-width: 480px; margin-bottom: 20px;"></div>
             <div class="search-tools">
@@ -1075,7 +1075,13 @@
         <div class="detail-inner-content">
             
             <div class="detail-header">
-                <div id="detKanji" style="font-size: 40px; color: var(--muji-red); font-weight: 800;"></div>
+                <div id="detKanji" style="font-size: 40px; color: var(--muji-red); font-weight: 800;">
+                    <span class="audio-btn" 
+      onclick="playAudio('${word.kanjiText}')" 
+      style="cursor: pointer; display: flex; align-items: center;">
+    <svg width="18" height="18" ...>...</svg>
+</span>
+                </div>
                 <div id="detKana" style="font-size: 18px; color: #666; font-weight: 600;"></div>
                 <div id="detHanViet" class="detail-hv"></div>
             </div>
@@ -1096,10 +1102,24 @@
 
            <div class="separator-dashed"></div>
 <div class="contribution-section">
-               <div class="contribution-title">
-        <span>góp ý cộng đồng</span> <span id="contributeCount" style="font-weight: 400; font-size: 10px;">0 đóng góp</span>
+               <div class="community-header" style="padding: 10px 5px 0 5px; margin-bottom: 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 3px; height: 14px; background: var(--muji-red); border-radius: 2px;"></div>
+            <h3 style="margin: 0; font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--muji-red); letter-spacing: 0.5px; line-height: 1;">
+                GÓP Ý "Ý NGHĨA VÀ CÁCH SỬ DỤNG TỪ"
+            </h3>
+        </div>
+
+        <div class="contribution-count-right" style="display: flex; align-items: baseline; gap: 5px;">
+            <span style="font-size: 18px; font-weight: 300; color: var(--muji-red); line-height: 1;">0</span>
+            <span style="font-size: 11px; color: #aaa; font-weight: 400; text-transform: lowercase;">góp ý</span>
+        </div>
     </div>
-                <div id="contributionList"></div>
+    
+    <div style="width: 100%; border-top: 1px dashed rgba(166, 61, 64, 0.2); margin-top: 4px;"></div>
+</div>
+                <div id="contributionList" style="margin-top: 15px;"></div>
                 <div class="contribution-input-group">
                     <input type="text" id="contributeInput" class="contribution-input" placeholder="Thêm nghĩa...">
                     <button class="btn-send" onclick="addContribution()">
@@ -1164,6 +1184,8 @@
                 <p>© 2026 sumi dict. bảo lưu mọi quyền.</p>
             </footer>
    <script>
+    // Thêm một hằng số phiên bản ở đầu script
+const DATA_VERSION = "2026-04-29-v2"; // Cậu đổi tên version này mỗi khi sửa file JSON
   // ==========================================
 // 1. CẤU HÌNH CƠ SỞ DỮ LIỆU
 const db = new Dexie("SumiAutoDB");
@@ -1355,7 +1377,9 @@ const chunk = terms.map((t, index) => {
                 await db.words.bulkAdd(chunk);
             } catch (e) { console.warn(`Lỗi file ${i}`); }
         }
-        typeText("Đã nạp xong 29 file! Cậu tìm từ xem nào. 🍵");
+        // 3. LƯU LẠI PHIÊN BẢN SAU KHI NẠP THÀNH CÔNG
+        localStorage.setItem('sumi_data_version', DATA_VERSION);
+        typeText("đã cập nhật dữ liệu mới nhất! cậu học vui nhé. 🍵");
     } catch (err) { console.error(err); }
 }
 
@@ -1396,7 +1420,21 @@ async function executeSearch(param) {
         }
     }
 }
+// --- DI CHUYỂN HÀM NÀY RA NGOÀI ĐỂ CÓ THỂ GỌI TỪ MỌI NƠI ---
+function playAudio(text) {
+    if (!text || text === "undefined") return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(String(text));
+    utterance.lang = 'ja-JP';
+    utterance.rate = 0.8;
+    window.speechSynthesis.speak(utterance);
 
+    const btn = document.querySelector('.audio-btn');
+    if (btn) {
+        btn.style.color = 'var(--muji-red)';
+        utterance.onend = () => { btn.style.color = '#ddd'; };
+    }
+}
 // 5. HIỂN THỊ DANH SÁCH (ĐÁNH SỐ 1, 2, 3)
 function displayResults(results) {
     const container = document.getElementById('result-container');
@@ -1436,8 +1474,20 @@ async function showWordDetail(wordId) {
         if (!word) return;
         currentWordId = wordId;
 
-        // 2. Đổ dữ liệu Header
-        document.getElementById('detKanji').innerText = word.kanjiText;
+        // 1. ĐỔ DỮ LIỆU HEADER (Kanji chính giữa, loa sát bên cạnh)
+        document.getElementById('detKanji').innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;">
+        <div style="width: 20px; visibility: hidden;"></div>
+        <span style="font-family: 'Klee One', serif; font-size: 32px; color: var(--muji-red); line-height: 1;">
+            ${word.kanjiText}
+        </span>
+        <span class="audio-btn" onclick="playAudio('${word.reading || word.kanjiText}')" style="color: #ddd; cursor: pointer; display: flex; align-items: center; width: 20px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+        </span>
+    </div>
+`;
         document.getElementById('detKana').innerText = word.reading ? `【${word.reading}】` : "";
         document.getElementById('detHanViet').innerText = getHanViet(word.kanjiText);
         
@@ -1450,10 +1500,11 @@ async function showWordDetail(wordId) {
                 <span class="word-type-tag" style="background: rgba(166, 61, 64, 0.08); color: var(--muji-red); font-size: 10px; padding: 3px 10px; border-radius: 4px; font-weight: 700; border: 1px solid rgba(166, 61, 64, 0.15); text-transform: lowercase; white-space: nowrap;">
                     ${wordType}
                 </span>
-                <span style="font-size: 11px; color: #bbb; font-weight: 400; letter-spacing: 0.3px;">phân loại từ vựng</span>
+               
             </div>
         `;
 
+        
        // 3. XỬ LÝ NGHĨA VÀ VÍ DỤ (HIỂN THỊ TOÀN BỘ THEO CẶP)
         const meaningContainer = document.getElementById('detMeaning');
         const oldExSec = document.getElementById('detExampleSection');
@@ -1466,11 +1517,9 @@ async function showWordDetail(wordId) {
         const examples = Array.isArray(word.example) ? word.example : [word.example];
 
         meanings.forEach((m, i) => {
-            // Lấy ví dụ tương ứng với nghĩa thứ i
             let currentEx = examples[i] || "";
             let exampleHtml = '';
 
-            // Chỉ tạo HTML nếu ví dụ thực sự có nội dung
             if (currentEx && currentEx !== "undefined" && String(currentEx).trim() !== "") {
                 const exLines = String(currentEx).split(/\\n|\n/);
                 exampleHtml = `
@@ -1485,11 +1534,8 @@ async function showWordDetail(wordId) {
                     <div style="display: flex; align-items: baseline; gap: 8px;">
                         <span style="font-size: 15px; font-weight: 500; color: var(--muji-red); flex-shrink: 0;">${i + 1}.</span>
                         <span style="font-size: 15px; font-weight: 400; color: var(--muji-red); line-height: 1.4;">${m}</span>
-                        <span class="audio-btn" style="color: #ddd; cursor: pointer; margin-left: 5px;">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                        </span>
                     </div>
-                    ${exampleHtml} 
+                    ${exampleHtml}
                 </div>`;
         });
 
@@ -1598,23 +1644,51 @@ async function loadContributions(wordId) {
     const listEl = document.getElementById('contributionList');
     if (!listEl) return;
 
+    // 1. Lấy dữ liệu
     const items = await db.contributions.where('wordId').equals(wordId).toArray();
+    const count = items.length;
+
+    // 2. CẬP NHẬT TRỰC TIẾP VÀO CÁC THẺ ĐÃ CÓ SẴN TRONG HTML
+    // (Bỏ phần tạo header.innerHTML cũ đi để tránh bị lặp 2 tầng)
     
-    if (items.length === 0) {
-        listEl.innerHTML = `<p style="font-size: 12px; color: #999; text-align: center; padding: 15px;">Chưa có góp ý nào. 🌸</p>`;
+    // Tìm thẻ số đếm bên tay phải (cậu hãy đặt class/id cho nó trong HTML gốc nhé)
+    // Ví dụ Sumi tìm theo class .contribution-count-right
+    const countDisplay = document.querySelector('.contribution-count-right'); 
+    if (countDisplay) {
+        countDisplay.innerHTML = `
+            <span style="
+                font-size: 18px; 
+                font-weight: 300; 
+                color: var(--muji-red); 
+                line-height: 1;
+            ">${count}</span>
+            <span style="
+                font-size: 13px; 
+                color: #aaa; 
+                text-transform: lowercase; 
+                margin-left: 5px; 
+                font-weight: 400;
+                letter-spacing: 0.5px;
+            ">GÓP Ý</span>
+        `;
+    }
+
+    // 3. HIỂN THỊ DANH SÁCH
+    if (count === 0) {
+        listEl.innerHTML = `<p style="font-size: 12px; color: #bbb; text-align: center; padding: 20px; font-style: italic;">chưa có góp ý nào. 🌸</p>`;
     } else {
         listEl.innerHTML = items.map(item => `
-            <div class="contribution-item" style="background: rgba(255,255,255,0.6); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(166,61,64,0.05);">
-                <div style="font-size: 13px; color: #333;">${item.content}</div>
+            <div class="contribution-item" style="background: rgba(255,255,255,0.6); padding: 14px; border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(166,61,64,0.05);">
+                <div style="font-size: 14px; color: #444; line-height: 1.5;">${item.content}</div>
                 
-                <div class="reaction-bar">
-                    <button class="reaction-btn" onclick="handleReaction(${item.id}, 'like')">
-                        <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
-                        <span>${item.likes || 0}</span>
+                <div class="reaction-bar" style="display: flex; gap: 15px; margin-top: 10px;">
+                    <button class="reaction-btn" style="background:none; border:none; display:flex; align-items:center; gap:5px; cursor:pointer; color:#999;" onclick="handleReaction(${item.id}, 'like')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                        <span style="font-size: 12px;">${item.likes || 0}</span>
                     </button>
-                    <button class="reaction-btn" onclick="handleReaction(${item.id}, 'dislike')">
-                        <svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>
-                        <span>${item.dislikes || 0}</span>
+                    <button class="reaction-btn" style="background:none; border:none; display:flex; align-items:center; gap:5px; cursor:pointer; color:#999;" onclick="handleReaction(${item.id}, 'dislike')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>
+                        <span style="font-size: 12px;">${item.dislikes || 0}</span>
                     </button>
                 </div>
             </div>
@@ -1821,7 +1895,7 @@ document.addEventListener('click', function(e) {
         container.style.display = 'none';
     }
 });
-</script>
+
 </script>
 <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="processImage(event)">
 
