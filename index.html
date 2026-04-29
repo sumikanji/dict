@@ -864,6 +864,81 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+/* Container chung cho mỗi mục nghĩa */
+.meaning-item {
+    margin-bottom: 25px;
+}
+
+/* Tiêu đề nghĩa (Số thứ tự + Nghĩa chính) */
+.meaning-main {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0056b3; /* Màu xanh từ điển chuyên nghiệp */
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Thẻ trình độ (N5, N4...) */
+.level-tag {
+    background-color: #2ecc71;
+    color: white;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+/* KHUNG Ý NGHĨA (Nền Muji) */
+.meaning-box {
+    background-color: var(--muji-bg);
+    border-radius: 12px;
+    padding: 15px;
+    border-left: 4px solid var(--muji-red);
+    margin-bottom: 10px;
+}
+
+/* VÍ DỤ (Không khung, thoáng đãng) */
+.example-box {
+    padding-left: 15px;
+    margin-top: 10px;
+    position: relative;
+}
+
+.example-ja {
+    font-size: 15px;
+    color: #333;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.example-vi {
+    font-size: 13px;
+    color: #666;
+    display: block;
+}
+
+/* Nút loa giả lập */
+.audio-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: #888;
+    cursor: pointer;
+    margin-left: 10px;
+}
+.separator-dashed {
+    width: 100%;
+    height: 1px;
+    border-top: 1px dashed rgba(166, 61, 64, 0.2); /* Màu đỏ Muji mờ */
+    margin: 30px 0; /* Khoảng cách trên dưới để nội dung không bị dính */
+    position: relative;
+}
+
+
 </style>
     </style>
 </head>
@@ -1004,9 +1079,13 @@
                 <div id="detKana" style="font-size: 18px; color: #666; font-weight: 600;"></div>
                 <div id="detHanViet" class="detail-hv"></div>
             </div>
-
+ <div class="detail-section" >
+              
+        
+                <p id="detTag" style="font-size: 12px; color: #999; text-align: center;"></p>
+            </div>
             <div class="detail-section">
-                <b>Ý NGHĨA</b>
+                
                 <div id="detMeaning" class="detail-text"></div>
             </div>
 
@@ -1015,11 +1094,7 @@
                 <div id="detExample" class="detail-example"></div>
             </div>
 
-            <div class="detail-section" style="margin-top: 20px; border-top: 1px dashed rgba(0,0,0,0.05); padding-top: 15px;">
-               <b> Thông tin thêm </b>
-        
-                <p id="detTag" style="font-size: 12px; color: #999; text-align: center;"></p>
-            </div>
+           <div class="separator-dashed"></div>
 <div class="contribution-section">
                <div class="contribution-title">
         <span>góp ý cộng đồng</span> <span id="contributeCount" style="font-weight: 400; font-size: 10px;">0 đóng góp</span>
@@ -1350,50 +1425,84 @@ function displayResults(results) {
 }
 
 async function showWordDetail(wordId) {
-    // 1. Dọn dẹp giao diện (Ẩn tất cả các trang nền)
+    // 1. Dọn dẹp giao diện
     document.getElementById('result-container').style.display = 'none';
     document.getElementById('home-view').style.display = 'none';
-    
     const nbFullPage = document.getElementById('notebook-full-page');
     if (nbFullPage) nbFullPage.style.display = 'none'; 
 
     try {
-        // 2. Lấy dữ liệu từ database
         const word = await db.words.get(String(wordId));
         if (!word) return;
         currentWordId = wordId;
 
-        // 3. Đổ dữ liệu vào trang chi tiết
+        // 2. Đổ dữ liệu Header
         document.getElementById('detKanji').innerText = word.kanjiText;
         document.getElementById('detKana').innerText = word.reading ? `【${word.reading}】` : "";
         document.getElementById('detHanViet').innerText = getHanViet(word.kanjiText);
-        document.getElementById('detMeaning').innerHTML = word.meanings.map((m, i) => 
-            `<div style="margin-bottom:10px;"><b>${i+1}.</b> ${m}</div>`
-        ).join('');
+        
+        // --- PHẦN TAG LOẠI TỪ (TRÊN CÙNG PHẦN NGHĨA) ---
+        const tagContainer = document.getElementById('detTag');
+        const wordType = word.tags || "từ vựng"; 
+        // Bỏ chữ "TỪ LOẠI", bỏ nét đứt, cho thẻ và text nằm chung 1 dòng
+        tagContainer.innerHTML = `
+            <div style="width: 100%; padding: 10px 5px; margin-top: 5px; display: flex; align-items: center; gap: 10px;">
+                <span class="word-type-tag" style="background: rgba(166, 61, 64, 0.08); color: var(--muji-red); font-size: 10px; padding: 3px 10px; border-radius: 4px; font-weight: 700; border: 1px solid rgba(166, 61, 64, 0.15); text-transform: lowercase; white-space: nowrap;">
+                    ${wordType}
+                </span>
+                <span style="font-size: 11px; color: #bbb; font-weight: 400; letter-spacing: 0.3px;">phân loại từ vựng</span>
+            </div>
+        `;
 
-        // Xử lý ví dụ
-        const exEl = document.getElementById('detExample');
-        const exSec = document.getElementById('detExampleSection');
-        if (word.example && word.example !== "undefined" && String(word.example).trim() !== "") {
-            exEl.innerHTML = String(word.example).replace(/\\n/g, "<br>").replace(/\n/g, "<br>");
-            exSec.style.display = "block";
-        } else {
-            exSec.style.display = "none";
-        }
+       // 3. XỬ LÝ NGHĨA VÀ VÍ DỤ (HIỂN THỊ TOÀN BỘ THEO CẶP)
+        const meaningContainer = document.getElementById('detMeaning');
+        const oldExSec = document.getElementById('detExampleSection');
+        if(oldExSec) oldExSec.style.display = "none"; 
+
+        let htmlContent = '';
+        
+        // Đảm bảo meanings và examples đều được xử lý dưới dạng mảng
+        const meanings = Array.isArray(word.meanings) ? word.meanings : [word.meanings];
+        const examples = Array.isArray(word.example) ? word.example : [word.example];
+
+        meanings.forEach((m, i) => {
+            // Lấy ví dụ tương ứng với nghĩa thứ i
+            let currentEx = examples[i] || "";
+            let exampleHtml = '';
+
+            // Chỉ tạo HTML nếu ví dụ thực sự có nội dung
+            if (currentEx && currentEx !== "undefined" && String(currentEx).trim() !== "") {
+                const exLines = String(currentEx).split(/\\n|\n/);
+                exampleHtml = `
+                    <div style="margin-left: 10px; margin-top: 6px; padding-left: 15px; border-left: 1px solid rgba(166, 61, 64, 0.15);">
+                        <div style="font-size: 14px; color: #777; margin-bottom: 2px; font-weight: 400;">${exLines[0] || ""}</div>
+                        <div style="font-size: 12px; color: #999; font-weight: 400; font-style: italic;">${exLines[1] || ""}</div>
+                    </div>`;
+            }
+
+            htmlContent += `
+                <div class="meaning-group" style="margin-bottom: 20px;">
+                    <div style="display: flex; align-items: baseline; gap: 8px;">
+                        <span style="font-size: 15px; font-weight: 500; color: var(--muji-red); flex-shrink: 0;">${i + 1}.</span>
+                        <span style="font-size: 15px; font-weight: 400; color: var(--muji-red); line-height: 1.4;">${m}</span>
+                        <span class="audio-btn" style="color: #ddd; cursor: pointer; margin-left: 5px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                        </span>
+                    </div>
+                    ${exampleHtml} 
+                </div>`;
+        });
+
+        meaningContainer.innerHTML = htmlContent;
 
         // 4. Hiển thị trang chi tiết
         document.getElementById('word-detail-page').style.display = 'block';
+        checkNotebookStatus(wordId); 
+        loadContributions(wordId);   
+        window.scrollTo(0, 0);       
         
-        // 5. Các chức năng bổ trợ
-        checkNotebookStatus(wordId); // Đổi màu nút sổ tay (đã lưu hay chưa)
-        loadContributions(wordId);   // Tải góp ý cộng đồng
-        window.scrollTo(0, 0);       // Luôn cuộn lên đầu trang
-        
-    } catch (err) { 
-        console.error("Lỗi showWordDetail:", err); 
-    }
+    } catch (err) { console.error(err); }
 }
-
 async function toggleNotebook() {
     const section = document.getElementById('notebook-section');
     
@@ -1527,6 +1636,41 @@ async function handleReaction(id, type) {
     await db.contributions.put(item);
     loadContributions(currentWordId); // Tải lại danh sách
 }
+// --- PHẦN COPYRIGHT ĐỒNG NHẤT VỚI INDEX ---
+        const footerId = 'detail-footer-copyright';
+        const oldFooter = document.getElementById(footerId);
+        if (oldFooter) oldFooter.remove();
+
+        const footer = document.createElement('div');
+        footer.id = footerId;
+        // Sử dụng padding-bottom lớn (80px) để "đẩy" nút góp ý lên, tránh bị che
+        footer.style = `
+            text-align: center; 
+            padding: 60px 20px 80px 20px; 
+            margin-top: 40px;
+        `;
+        
+        footer.innerHTML = `
+            <div style="width: 30px; height: 1px; background: #eee; margin: 0 auto 20px auto;"></div>
+            
+            <div style="
+                color: #bbb; 
+                font-size: 10px; 
+                font-weight: 300; 
+                letter-spacing: 2px; 
+                text-transform: lowercase;
+                font-family: 'Be Vietnam Pro', sans-serif;
+            ">
+                © 2026 sumi dict. bảo lưu mọi quyền.
+            </div>
+            
+            
+        `;
+        
+        document.getElementById('word-detail-page').appendChild(footer);
+
+       
+
 // Hàm quay lại trang chủ
 function closeWordDetail() {
     document.getElementById('word-detail-page').style.display = 'none';
